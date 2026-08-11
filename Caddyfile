@@ -1,0 +1,23 @@
+# Replace the domain below with YOUR domain (e.g. ai-tutor.duckdns.org).
+# Caddy automatically gets & renews a free Let's Encrypt HTTPS certificate
+# for it — no certbot needed. The domain must already point to this VM's
+# public IP, and ports 80 + 443 must be open (see DEPLOY_ORACLE.md).
+
+your-subdomain.duckdns.org {
+	encode gzip zstd
+
+	# API: /api/* is proxied to the backend with the /api prefix stripped
+	# (backend routes live at root, e.g. /refresh, /tutor). Same behaviour as
+	# the Vite dev proxy, and same-origin so the auth cookie just works.
+	handle_path /api/* {
+		reverse_proxy api:8000
+	}
+
+	# Everything else: serve the React SPA, falling back to index.html so
+	# client-side routes (react-router) work on refresh/deep-link.
+	handle {
+		root * /srv
+		try_files {path} /index.html
+		file_server
+	}
+}

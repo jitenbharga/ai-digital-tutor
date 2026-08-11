@@ -1,0 +1,57 @@
+# Render Blueprint — backend web service (Docker).
+# Render dashboard → "New +" → "Blueprint" → pick your repo → it reads this file.
+# Secrets (sync: false) are NOT stored here — you fill them in the dashboard.
+#
+# ⚠️ MEMORY: `plan: free` = 512 MB RAM. This app loads torch + faiss at startup
+# and will very likely OOM on 512 MB. If the service crashes on boot with an
+# out-of-memory error, change `plan: free` to `plan: standard` (2 GB, paid), or
+# move the backend to Cloud Run / Oracle (free, more RAM) — see DEPLOY_RENDER.md.
+services:
+  - type: web
+    name: ai-tutor-api
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    region: singapore          # closest Render region to India
+    plan: free                 # 512 MB — see memory note above
+    healthCheckPath: /healthz
+    autoDeploy: true           # redeploy on every push to the connected branch
+    # Render injects $PORT automatically; the Dockerfile already binds to it.
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: DB_NAME
+        value: ai_tutor
+      # ---- secrets & URLs: set these in the Render dashboard ----
+      - key: MONGODB_URI
+        sync: false
+      - key: SECRET_KEY
+        sync: false
+      - key: APP_BASE_URL        # your Vercel URL, e.g. https://ai-tutor.vercel.app
+        sync: false
+      - key: ALLOWED_ORIGINS     # same Vercel URL
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: MISTRAL_API_KEY_1
+        sync: false
+      - key: MISTRAL_API_KEY_2
+        sync: false
+      - key: MISTRAL_API_KEY_3
+        sync: false
+      - key: GROQ_API_KEY_1
+        sync: false
+      - key: GROQ_API_KEY_2
+        sync: false
+      - key: GROQ_API_KEY_3
+        sync: false
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        sync: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASSWORD
+        sync: false
+      - key: SMTP_FROM
+        sync: false

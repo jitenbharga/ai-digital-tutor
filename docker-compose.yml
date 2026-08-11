@@ -1,0 +1,44 @@
+# ============================================================
+# AI Digital Tutor — all-in-one stack for an Oracle Cloud ARM VM
+#   caddy : auto-HTTPS, serves the built frontend + proxies /api -> api
+#   api   : FastAPI backend (built from ./Dockerfile)
+#   mongo : self-hosted MongoDB (internal network only, not internet-exposed)
+# Single origin => no CORS/cookie problems. Always-on => zero cold start.
+# ============================================================
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    volumes:
+      - mongo_data:/data/db
+    # Not published to the host — only the api container can reach it.
+
+  api:
+    build: ./backend
+    restart: unless-stopped
+    env_file: .env            # create this on the VM (see DEPLOY_ORACLE.md) — never commit it
+    environment:
+      - PORT=8000
+    depends_on:
+      - mongo
+    expose:
+      - "8000"                # internal only; Caddy talks to it
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./frontend/dist:/srv:ro   # the built SPA (run `npm run build` first)
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - api
+
+volumes:
+  mongo_data:
+  caddy_data:
+  caddy_config:

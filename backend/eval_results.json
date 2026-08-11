@@ -1,0 +1,42 @@
+{
+  "Random": {
+    "n_learners": 300,
+    "mean_knowledge_gain": 0.17560071420862164,
+    "mean_reward": 54.80407865271775,
+    "mean_frustration": 0.4507748136782169,
+    "mean_engagement": 0.16798836128649763,
+    "mastery_rate": 0.0,
+    "mean_questions_to_mastery": 0.0,
+    "mean_final_knowledge": 0.6182269173778411
+  },
+  "FixedLadder": {
+    "n_learners": 300,
+    "mean_knowledge_gain": 0.2512934336162675,
+    "mean_reward": 47.6611577565552,
+    "mean_frustration": 0.3338326491804766,
+    "mean_engagement": 0.21688283495289568,
+    "mastery_rate": 0.0,
+    "mean_questions_to_mastery": 0.0,
+    "mean_final_knowledge": 0.693919636785487
+  },
+  "MasteryThreshold": {
+    "n_learners": 300,
+    "mean_knowledge_gain": 0.2748646417627587,
+    "mean_reward": 64.57559809189,
+    "mean_frustration": 0.2864488971543004,
+    "mean_engagement": 0.27840749278413207,
+    "mastery_rate": 0.0,
+    "mean_questions_to_mastery": 0.0,
+    "mean_final_knowledge": 0.7174908449319781
+  },
+  "DQN": {
+    "n_learners": 300,
+    "mean_knowledge_gain": 0.28862228001845347,
+    "mean_reward": 79.75228890472967,
+    "mean_frustration": 0.25949853381420174,
+    "mean_engagement": 0.33372860998625725,
+    "mastery_rate": 0.0,
+    "mean_questions_to_mastery": 0.0,
+    "mean_final_knowledge": 0.731248483187673
+  }
+}

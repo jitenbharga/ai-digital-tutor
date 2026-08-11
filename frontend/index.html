@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <!-- A11y (WCAG 1.4.4): allow pinch-zoom — do NOT set maximum-scale / user-scalable=no. -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#6366f1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="AI Tutor" />
+  <meta name="description" content="Your personal AI-powered learning companion" />
+  <title>AI Digital Tutor</title>
+  <link rel="icon" href="/favicon.svg" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+  <style>
+    html.font-large { font-size: 120%; }
+    html.font-xl { font-size: 140%; }
+    /* Accessibility: visible focus rings for keyboard nav */
+    *:focus-visible {
+      outline: 2px solid #6366f1;
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
+    /* Skip to content link */
+    .skip-link {
+      position: absolute; left: -9999px; top: auto;
+      z-index: 9999; background: #6366f1; color: white;
+      padding: 8px 16px; border-radius: 0 0 8px 0;
+      font-weight: 600; font-size: 14px; text-decoration: none;
+    }
+    .skip-link:focus { left: 0; top: 0; }
+  </style>
+</head>
+<body class="antialiased">
+  <div id="root"></div>
+  <script type="module" src="/src/main.jsx"></script>
+</body>
+</html>

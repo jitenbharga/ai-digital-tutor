@@ -1,0 +1,168 @@
+# =============================================
+# AI Digital Tutor - RL Training Configuration
+# =============================================
+
+rl:
+  # --- DQN architecture ---
+  state_dim: 16
+  action_dim: 36          # 4 modes x 3 hints x 3 difficulties
+
+  # --- Training ---
+  gamma: 0.95
+  lr: 0.0003
+  batch_size: 64
+  min_buffer: 500         # transitions before first train_step
+  buffer_capacity: 20000
+  target_update_freq: 500
+
+  # --- Epsilon schedule ---
+  epsilon_start: 1.0
+  epsilon_end: 0.05
+  epsilon_decay: 0.999
+
+  # --- Serving ---
+  serve_epsilon: 0.0      # production exploration (0.0 = pure greedy)
+
+llm:
+  temperature: 0.7
+  max_retries: 2                # retries per model in fallback loop (3→2: less compounding latency)
+  primary_model: "mistral"      # strong-tier primary (Gemini + HuggingFace dropped)
+                                # options: mistral, groq
+
+  # P3.1: Two-tier model routing — cheap for grading/classify, strong for generation
+  routing:
+    # Multi-key round-robin load balancing across 3 Mistral + 3 Groq keys.
+    # Primary provider's keys rotate per request; the other is the fallback tail.
+    strong_order: ["mistral", "groq"]   # generation: Mistral primary (quality), Groq fallback
+    cheap_order: ["groq", "mistral"]    # grading/verify/classify: fast Groq primary, Mistral fallback
+    cheap_engines:                                 # engines routed to cheap tier
+      - "answer_evaluator"
+      - "answer_verifier"
+      - "leakage_guard"
+      - "prerequisite_engine"
+      - "knowledge_graph"
+      - "review_engine"
+      - "quiz_engine"
+
+  cache:
+    enabled: true
+    ttl_seconds: 900            # 15 minutes (increased from 10 for better hit rate)
+    max_size: 1024              # doubled for better coverage
+
+  retry:
+    backoff_base: 0.5           # initial delay in seconds
+    backoff_cap: 8.0            # max delay per retry (seconds)
+    rate_limit_cooldown: 30.0   # (reserved) cooldown after 429 before retrying same model
+
+  evaluator:
+    confidence_threshold: 0.75  # min LLM-reported confidence to accept 1-sample grade
+    max_samples: 3              # total samples on escalation (majority vote)
+
+  # Hedged requests: race the first N keys in parallel, first valid response wins
+  # (loser cancelled). Cuts tail latency for the strong tier; costs ~2x calls on
+  # hedged requests, so OFF by default. Turn on once you have spare key quota.
+  hedge:
+    enabled: false              # set true to enable racing
+    n: 2                        # how many keys to race
+    tiers: ["strong"]           # which tiers hedge (strong = generation/explain/hints)
+
+# --- Mastery gating (P2.1) ---
+mastery:
+  prerequisite_threshold: 0.7   # BKT P(correct) required to unlock a topic
+  enforce_gating: true          # if false, warn but don't block
+
+# --- Feature flags (Kill List) ---
+features:
+  rl_enabled: false             # DQN action selection; false = simple mastery rule
+  gamification_enabled: false   # XP, levels, badges, streaks, daily goals
+  quests_enabled: false         # Daily quests (E11)
+  guardian_enabled: true        # Guardian/parental read-only access
+  certificates_enabled: false   # Mastery certificates + PDF export
+  dkt_enabled: false            # Deep Knowledge Tracing (keep BKT only)
+  voice_enabled: false          # TTS/STT; off by default (COPPA biometric risk for minors)
+  leaderboard_enabled: false    # Weekly cohort leaderboard (P5)
+
+# --- P4: A/B Experiment config ---
+experiment:
+  rl_vs_rule:
+    experiment_id: "rl_vs_rule_v1"
+    traffic_pct: 1.0              # fraction of users enrolled (1.0 = all)
+    min_sample_size: 30           # users per arm before declaring a winner
+    win_conditions:
+      primary_metric: "normalized_learning_gain"
+      min_effect_size: 0.1        # Cohen's d — treatment must beat control by this
+      significance_level: 0.05    # p-value threshold (two-sided)
+      secondary_metrics:
+        - "mean_frustration"      # lower is better for treatment
+        - "day7_retention"        # higher is better for treatment
+
+  # P5: Per-feature delight experiments (all share day7_retention as primary)
+  delight_features:
+    - experiment_id: "gamification_v1"
+      traffic_pct: 1.0
+      min_sample_size: 30
+    - experiment_id: "leaderboard_v1"
+      traffic_pct: 1.0
+      min_sample_size: 30
+    - experiment_id: "certificates_v1"
+      traffic_pct: 1.0
+      min_sample_size: 30
+
+# --- P5: Reminder defaults ---
+reminders:
+  quiet_hours_start: 22          # 10 PM (user-local)
+  quiet_hours_end: 8             # 8 AM
+  streak_reminder: true
+  daily_goal_reminder: true
+  welcome_back: true
+
+auth:
+  algorithm: "HS256"
+  # Access token expiry = 7 days (10080 min) per request.
+  # NOTE (SEC): this is long-lived — a leaked access token stays valid 7 days and
+  # can't be revoked (access tokens aren't stored). Refresh cookie already gives
+  # 7-day sessions via silent refresh, so 15 min was the safer default.
+  access_token_expire_minutes: 10080   # 7 days
+  refresh_token_expire_days: 7
+
+mentor:
+  name: "Sage"
+  encouragement_style: "warm and supportive, celebrating effort over perfection"
+  memory_limit: 10          # rolling mentor memory items per student
+
+onboarding:
+  placement_questions: 5    # adaptive placement quiz length
+  invite_code_hours: 24
+  age_bands: ["under-13", "13-17", "18+"]
+
+training:
+  # --- Offline trainer ---
+  episodes: 5000
+  max_steps_per_episode: 50
+  checkpoint_freq: 500
+  log_interval: 100
+  checkpoint_path: "checkpoints/dqn_model.pt"
+
+  # --- Simulated student ---
+  sim_topics:
+    - "Algebra"
+    - "Calculus"
+    - "Linear Algebra"
+    - "Probability"
+    - "Statistics"
+
+  # --- Trait initialization ranges (uniform random) ---
+  sim_trait_ranges:
+    knowledge: [0.1, 0.8]
+    concept_mastery: [0.1, 0.6]
+    confidence: [0.2, 0.8]
+    engagement: [0.3, 0.9]
+    frustration: [0.0, 0.4]
+    streak: [0, 3]
+    fatigue: [0.0, 0.3]
+    cognitive_load: [0.1, 0.4]
+    hint_dependency: [0.0, 0.3]
+    focus: [0.4, 0.8]
+    curiosity: [0.3, 0.7]
+    retention: [0.4, 0.8]
+    speed: [0.3, 0.7]

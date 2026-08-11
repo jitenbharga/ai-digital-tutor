@@ -1,0 +1,21 @@
+# Coverage config (W2). Thresholds are applied in CI:
+#   * security-critical modules  -> --cov-fail-under=90
+#   * whole testable backend      -> --cov-fail-under=30 (ratchet floor; rises as
+#     serve.py/extras.py are decomposed and tested in Wave 4).
+[run]
+branch = False
+omit =
+    tests/*
+    venv*/*
+    */__pycache__/*
+    training/*
+    scripts/*
+    # serve.py / api/extras.py are now MEASURED (T1.1): route tests exercise them.
+
+[report]
+show_missing = True
+skip_covered = False
+exclude_lines =
+    pragma: no cover
+    raise NotImplementedError
+    if __name__ == .__main__.:

@@ -1,0 +1,77 @@
+# ---------------------------------------------------
+# Python Core
+# ---------------------------------------------------
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# ---------------------------------------------------
+# Virtual Environments
+# ---------------------------------------------------
+venv/
+env/
+venv32/
+.venv/
+
+# Environment variables (keep .env.example tracked)
+.env
+.env.local
+.env.*.local
+.env.production
+.env.development
+env.yaml
+env.*.yaml
+
+# Test / build junk
+.coverage
+.coverage.*
+*.timestamp-*.mjs
+
+# ---------------------------------------------------
+# Machine Learning / Data Science
+# ---------------------------------------------------
+# PyTorch and other model weights
+*.pth
+*.pt
+*.pt.old
+*.onnx
+*.h5
+*.pkl
+# Ignore checkpoint junk but KEEP the shipped, production DQN model (baked into
+# the Docker image; the DQN gate loads it at boot).
+checkpoints/*
+!checkpoints/dqn_model.pt
+!checkpoints/dqn_model_best.pt
+
+# Datasets & DB dumps (prevents uploading massive/sensitive data files)
+*.csv
+*.dat
+*.dump
+*.bson
+/data/
+/datasets/
+/dump/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
+
+# ---------------------------------------------------
+# Node / Frontend
+# ---------------------------------------------------
+node_modules/
+frontend/dist/
+
+# ---------------------------------------------------
+# IDEs and Editors
+# ---------------------------------------------------
+.vscode/
+.idea/
+
+# ---------------------------------------------------
+# Windows OS Files
+# ---------------------------------------------------
+Thumbs.db
+desktop.ini
+# Local env backups (may contain secrets) — never commit
+.env.bak*

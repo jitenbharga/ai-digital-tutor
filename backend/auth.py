@@ -1,6 +1,7 @@
 import os
 import logging
 import asyncio
+from typing import Optional
 from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, HTTPException, Depends, Request, Response, Body, Cookie
 from fastapi.security import OAuth2PasswordRequestForm

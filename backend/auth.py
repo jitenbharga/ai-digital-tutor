@@ -62,19 +62,23 @@ def _clear_refresh_cookie(response: Response) -> None:
 _APP_BASE_URL = os.getenv("APP_BASE_URL", "").rstrip("/")
 
 
-async def _send_verification_email(username: str, email: str) -> None:
-    """Create a single-use verify token and email an activation link."""
-    import asyncio
+async def _send_verification_email(username: str, email: str) -> str:
+    """Create a single-use verify token, send email if backend emailer configured, return link."""
     from core.account_recovery import (
         create_token, VERIFY_TOKEN_TTL_SECONDS, PURPOSE_VERIFY,
     )
-    from core.emailer import send_email
+    from core.emailer import send_email, emailer_configured
+    from core.email_templates import verification_email
 
     token = await create_token(username, PURPOSE_VERIFY, VERIFY_TOKEN_TTL_SECONDS)
     link = f"{_APP_BASE_URL}/verify-email?token={token}"
-    from core.email_templates import verification_email
-    subject, html, text = verification_email(link)
-    await send_email(email, subject, html, text)
+    if emailer_configured() and email:
+        subject, html, text = verification_email(link)
+        try:
+            await send_email(email, subject, html, text)
+        except Exception as e:
+            logger.warning("Backend send_email failed for %s: %s", username, e)
+    return link
 
 
 @router.post("/signup", status_code=201)
@@ -143,13 +147,17 @@ async def signup(request: Request, user: UserIn):
         doc["linked_children"] = []  # student usernames this guardian can read
     await UserRepository.create(doc)
 
-    # Send the verification link. Login stays blocked until the email is verified.
-    # Skipped when auto-verify is on (test/E2E) since there's no real mailbox.
+    # Build the verification link. Sending is done by the frontend (email
+    # service), so the link is returned in the response. Skipped when
+    # auto-verify is on (test/E2E) since there's no real mailbox.
     if not _AUTO_VERIFY_SIGNUP:
         try:
-            await _send_verification_email(user.username, email)
+            verify_link = await _send_verification_email(user.username, email)
         except Exception as e:
-            logger.warning("verification email failed for %s: %s", user.username, e)
+            logger.warning("verification link failed for %s: %s", user.username, e)
+            verify_link = ""
+    else:
+        verify_link = ""
 
     # P0.3: Track signup event (fire-and-forget, but keep a reference so the
     # task isn't garbage-collected mid-flight and log any failure).
@@ -165,6 +173,7 @@ async def signup(request: Request, user: UserIn):
     return {
         "message": "Account created. Check your email for a verification link before logging in.",
         "verify_required": True,
+        "verify_link": verify_link or None,
     }
 
 
@@ -335,12 +344,11 @@ class VerifyEmailRequest(BaseModel):
 @limiter.limit("5/minute")
 async def forgot_password(request: Request, body: ForgotPasswordRequest):
     """Start a password reset. Always returns a generic message (no account
-    enumeration). If the account exists AND has an email, a reset link is sent."""
-    import asyncio
+    enumeration). If the account exists AND has an email, a reset link is
+    returned — the FRONTEND emails it (EmailJS from the browser)."""
     from core.account_recovery import (
         create_token, RESET_TOKEN_TTL_SECONDS, PURPOSE_RESET,
     )
-    from core.emailer import send_email
 
     ident = (body.username or body.email or "").strip().lower()
     generic = {
@@ -351,11 +359,18 @@ async def forgot_password(request: Request, body: ForgotPasswordRequest):
     from repositories.users import UserRepository
     user = await UserRepository.get_by_username_or_email(ident)
     if user and user.get("email"):
+        email = user["email"]
         token = await create_token(user["username"], PURPOSE_RESET, RESET_TOKEN_TTL_SECONDS)
         link = f"{_APP_BASE_URL}/reset-password?token={token}"
+        generic["link"] = link
+        from core.emailer import send_email, emailer_configured
         from core.email_templates import password_reset_email
-        subject, html, text = password_reset_email(link)
-        await asyncio.to_thread(send_email, user["email"], subject, text, html)
+        if emailer_configured():
+            subject, html, text = password_reset_email(link)
+            try:
+                await send_email(email, subject, html, text)
+            except Exception as e:
+                logger.warning("Backend password reset send_email failed: %s", e)
     return generic
 
 
@@ -384,13 +399,8 @@ async def reset_password(request: Request, body: ResetPasswordRequest):
 async def request_email_verification(
     request: Request, current_user: dict = Depends(get_current_user)
 ):
-    """Send an email-verification link to the logged-in user's email."""
-    import asyncio
-    from core.account_recovery import (
-        create_token, VERIFY_TOKEN_TTL_SECONDS, PURPOSE_VERIFY,
-    )
-    from core.emailer import send_email
-
+    """Return a verification link for the logged-in user's email — the
+    FRONTEND emails it (see frontend/src/lib/emailService.js)."""
     email = current_user.get("email")
     if not email:
         raise HTTPException(400, "No email on file. Add one to your profile first.")
@@ -399,12 +409,8 @@ async def request_email_verification(
     token = await create_token(
         current_user["username"], PURPOSE_VERIFY, VERIFY_TOKEN_TTL_SECONDS
     )
-    link = f"/verify-email?token={token}"
-    await asyncio.to_thread(
-        send_email, email, "Verify your email",
-        f"Confirm your email within 24 hours: {link}",
-    )
-    return {"message": "Verification email sent."}
+    link = f"{_APP_BASE_URL}/verify-email?token={token}"
+    return {"message": "Verification email sent.", "link": link}
 
 
 @router.post("/verify-email")
@@ -428,9 +434,10 @@ class ResendVerificationRequest(BaseModel):
 @router.post("/verify-email/resend")
 @limiter.limit("5/minute")
 async def resend_verification(request: Request, body: ResendVerificationRequest):
-    """Public: resend the verification link by email. Generic response (no
-    enumeration). No-op if the account is missing or already verified — needed
-    because unverified users can't log in to hit the authed request endpoint."""
+    """Public: return a fresh verification link for the email address. Generic
+    response (no enumeration). No-op if the account is missing or already
+    verified — needed because unverified users can't log in to hit the authed
+    request endpoint. The FRONTEND emails the link when present."""
     email = (body.email or "").strip().lower()
     generic = {"message": "If that email needs verification, a new link has been sent."}
     if not email:
@@ -439,7 +446,7 @@ async def resend_verification(request: Request, body: ResendVerificationRequest)
     user = await UserRepository.get_by_email(email)
     if user and user.get("email") and not user.get("email_verified"):
         try:
-            await _send_verification_email(user["username"], user["email"])
+            generic["link"] = await _build_verification_link(user["username"])
         except Exception as e:
             logger.warning("resend verification failed for %s: %s", user["username"], e)
     return generic

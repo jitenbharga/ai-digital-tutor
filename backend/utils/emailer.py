@@ -22,7 +22,7 @@ def emailer_configured() -> bool:
     return bool(os.getenv("RESEND_API_KEY") or (os.getenv("SMTP_HOST") and os.getenv("SMTP_USER") and os.getenv("SMTP_PASSWORD")))
 
 
-# Backward compatibility alias for legacy call sites (routers/guardian.py, core/reminder_engine.py)
+# Alias for backward compatibility
 smtp_configured = emailer_configured
 
 
@@ -32,7 +32,6 @@ def _send_resend_https(to_addr: str, subject: str, html: str, text: str = "") ->
     if not api_key:
         return False
 
-    # Default to Resend testing domain if no custom domain verified
     from_addr = os.getenv("SMTP_FROM", "").strip()
     if not from_addr or "resend.dev" in from_addr or not ("@" in from_addr):
         from_addr = "AI Tutor <onboarding@resend.dev>"
@@ -75,7 +74,6 @@ def _send_resend_https(to_addr: str, subject: str, html: str, text: str = "") ->
 
 def _send_sync(to_addr: str, subject: str, html_or_text: str = "", text_or_html: str = "") -> bool:
     """Send via Resend HTTPS first, falling back to SMTP if configured."""
-    # Smart detection of html vs plain text parameters regardless of argument order
     if "<" in html_or_text or "</" in html_or_text:
         html, text = html_or_text, text_or_html
     elif "<" in text_or_html or "</" in text_or_html:
@@ -83,7 +81,7 @@ def _send_sync(to_addr: str, subject: str, html_or_text: str = "", text_or_html:
     else:
         html, text = f"<p>{html_or_text or text_or_html}</p>", html_or_text or text_or_html
 
-    # 1. Try HTTPS API (Port 443 - never blocked on Render)
+    # 1. Try Resend HTTPS API (Port 443)
     if os.getenv("RESEND_API_KEY"):
         if _send_resend_https(to_addr, subject, html, text):
             return True

@@ -4,7 +4,7 @@
   "outputDirectory": "dist",
   "framework": "vite",
   "rewrites": [
-    { "source": "/api/:path*", "destination": "https://digital-r8gu.onrender.com/:path*" },
+    { "source": "/api/:path*", "destination": "https://ai-digital-tutor.onrender.com/:path*" },
     { "source": "/(.*)", "destination": "/index.html" }
   ],
   "headers": [

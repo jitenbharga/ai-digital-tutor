@@ -2,6 +2,7 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
+  "framework": "vite",
   "rewrites": [
     { "source": "/api/:path*", "destination": "https://digital-r8gu.onrender.com/:path*" },
     { "source": "/(.*)", "destination": "/index.html" }

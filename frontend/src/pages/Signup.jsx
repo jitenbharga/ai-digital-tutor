@@ -148,7 +148,7 @@ export default function Signup() {
           <span className="text-xs text-gray-400">or</span>
           <div className="flex-1 h-px bg-gray-200" />
         </div>
-        <GoogleButton onSuccess={onGoogle} onError={setError} />
+        <GoogleButton accountType={accountType} onSuccess={onGoogle} onError={setError} />
 
         <p className="text-center text-sm text-gray-500 mt-6">
           Already have an account?{' '}

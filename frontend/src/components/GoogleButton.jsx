@@ -25,7 +25,7 @@ function loadGsi() {
   return _gsiPromise;
 }
 
-export default function GoogleButton({ onSuccess, onError }) {
+export default function GoogleButton({ onSuccess, onError, accountType = 'student' }) {
   const ref = useRef(null);
   const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
@@ -39,7 +39,7 @@ export default function GoogleButton({ onSuccess, onError }) {
           client_id: clientId,
           callback: async (resp) => {
             try {
-              const data = await api.googleLogin(resp.credential);
+              const data = await api.googleLogin(resp.credential, accountType);
               onSuccess?.(data);
             } catch (e) {
               onError?.(e.message || 'Google sign-in failed');

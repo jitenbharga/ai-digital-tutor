@@ -73,7 +73,7 @@ async def _send_verification_email(username: str, email: str) -> None:
     link = f"{_APP_BASE_URL}/verify-email?token={token}"
     from core.email_templates import verification_email
     subject, html, text = verification_email(link)
-    await asyncio.to_thread(send_email, email, subject, text, html)
+    await send_email(email, subject, html, text)
 
 
 @router.post("/signup", status_code=201)
@@ -447,6 +447,7 @@ async def resend_verification(request: Request, body: ResendVerificationRequest)
 # ── Continue with Google (Google Identity Services) ─────────────────────────
 class GoogleAuthRequest(BaseModel):
     credential: str  # Google ID token (JWT) from the GIS button
+    account_type: Optional[str] = "student"  # "student" or "guardian"
 
 
 async def _unique_username_from_email(email: str) -> str:
@@ -470,7 +471,7 @@ async def _unique_username_from_email(email: str) -> str:
 @limiter.limit("10/minute")
 async def google_auth(request: Request, response: Response, body: GoogleAuthRequest):
     """Verify a Google ID token, then log in (existing email) or create a new
-    verified student account. No password is set for Google-only accounts."""
+    verified student/guardian account. No password is set for Google-only accounts."""
     client_id = os.getenv("GOOGLE_CLIENT_ID", "").strip()
     if not client_id:
         raise HTTPException(503, "Google sign-in is not configured")
@@ -503,10 +504,11 @@ async def google_auth(request: Request, response: Response, body: GoogleAuthRequ
 
     user = await UserRepository.get_by_email(email)
     if not user:
+        role = body.account_type if body.account_type in ("student", "guardian") else "student"
         username = await _unique_username_from_email(email)
         doc = {
             "username": username,
-            "role": "student",
+            "role": role,
             "email": email,
             "email_verified": True,   # Google already verified it
             "google_sub": google_sub,
@@ -515,11 +517,13 @@ async def google_auth(request: Request, response: Response, body: GoogleAuthRequ
             "age_band": "",
             "onboarded": False,
         }
+        if role == "guardian":
+            doc["linked_children"] = []
         await UserRepository.create(doc)
         user = doc
         try:
             from core.analytics import track_signup
-            _t = asyncio.create_task(track_signup(username, "student"))
+            _t = asyncio.create_task(track_signup(username, role))
             _background_tasks.add(_t)
             _t.add_done_callback(_background_tasks.discard)
         except Exception:

@@ -109,12 +109,12 @@ export const api = {
 
   // Continue with Google — send the GIS ID token; sets the in-memory access
   // token + refresh cookie just like /login.
-  googleLogin: async (credential) => {
+  googleLogin: async (credential, accountType = 'student') => {
     const res = await fetch(`${BASE}/auth/google`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
-      body: JSON.stringify({ credential }),
+      body: JSON.stringify({ credential, account_type: accountType }),
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.detail || 'Google sign-in failed');

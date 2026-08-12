@@ -119,6 +119,19 @@ async def ensure_indexes(raise_on_error: bool = False) -> dict:
             await coll.create_index(keys, **opts)
             created += 1
         except Exception as e:
+            # Handle index specification conflict (e.g. existing non-unique index upgraded to unique)
+            err_msg = str(e)
+            if "IndexKeySpecsConflict" in err_msg or "IndexOptionsConflict" in err_msg or "same name" in err_msg:
+                try:
+                    index_name = opts.get("name") or (keys if isinstance(keys, str) else f"{keys[0][0]}_1")
+                    log.warning("Dropping conflicting index '%s' on %s to recreate: %s", index_name, var, e)
+                    coll = getattr(mod, var)
+                    await coll.drop_index(index_name)
+                    await coll.create_index(keys, **opts)
+                    created += 1
+                    continue
+                except Exception as drop_err:
+                    log.error("Failed to drop and recreate conflicting index on %s: %s", var, drop_err)
             failed += 1
             log.error("Index creation FAILED on %s keys=%s: %s", var, keys, e)
             if raise_on_error:

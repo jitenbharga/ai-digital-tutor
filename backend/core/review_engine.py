@@ -17,21 +17,26 @@ import time
 from datetime import datetime, timezone, timedelta
 from typing import Dict, List, Optional
 
-from fsrs import Scheduler, Card, Rating, State
+try:
+    from fsrs import Scheduler, Card, Rating, State
+    _scheduler = Scheduler(
+        desired_retention=0.9,
+        enable_fuzzing=False,
+    )
+    FSRS_AVAILABLE = True
+except ImportError:
+    FSRS_AVAILABLE = False
+    Scheduler = Card = Rating = State = None
+    _scheduler = None
 
 from core.llm_registry import build_models_cheap
 from core.llm_utils import call_llm
 from core.prompts import review as prompt_tmpl
 
-logger = logging.getLogger("review_engine")
 
-_scheduler = Scheduler(
-    desired_retention=0.9,
-    enable_fuzzing=False,
-)
-
-
-def _get_or_create_card(concept) -> Card:
+def _get_or_create_card(concept):
+    if not FSRS_AVAILABLE or Card is None:
+        return None
     fsrs_state = getattr(concept, "fsrs_state", None)
     if fsrs_state and isinstance(fsrs_state, dict):
         try:
@@ -41,11 +46,14 @@ def _get_or_create_card(concept) -> Card:
     return Card()
 
 
-def _save_card(concept, card: Card):
-    concept.fsrs_state = card.to_dict()
+def _save_card(concept, card):
+    if card and hasattr(card, "to_dict"):
+        concept.fsrs_state = card.to_dict()
 
 
-def map_rating(correct: bool, response_time: float = 0, hint_level: int = 0) -> Rating:
+def map_rating(correct: bool, response_time: float = 0, hint_level: int = 0):
+    if not FSRS_AVAILABLE or Rating is None:
+        return 1
     if not correct:
         return Rating.Again
     if response_time < 5 and hint_level == 0:
@@ -64,7 +72,7 @@ class ReviewEngine:
     def get_retrievability(self, concept) -> float:
         card = _get_or_create_card(concept)
         now = datetime.now(timezone.utc)
-        if card.last_review is None:
+        if not card or card.last_review is None:
             return concept.concept_mastery
         try:
             return card.get_retrievability(now)
@@ -78,7 +86,7 @@ class ReviewEngine:
         for topic, concept in student.concepts.items():
             card = _get_or_create_card(concept)
 
-            if card.last_review is None:
+            if not card or card.last_review is None:
                 if concept.concept_mastery > 0.1:
                     due.append({
                         "topic": topic,
@@ -115,6 +123,10 @@ class ReviewEngine:
     def mark_reviewed(concept, correct: bool = True,
                       response_time: float = 10.0, hint_level: int = 0):
         card = _get_or_create_card(concept)
+        if not _scheduler or not FSRS_AVAILABLE or not card:
+            concept.last_reviewed = time.time()
+            concept.review_count = getattr(concept, "review_count", 0) + 1
+            return
         now = datetime.now(timezone.utc)
         rating = map_rating(correct, response_time, hint_level)
         updated_card, review_log = _scheduler.review_card(card, rating, now)

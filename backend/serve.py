@@ -243,7 +243,7 @@ __all__ = [
 ]
 
 
-@app.get("/healthz")
+@app.api_route("/healthz", methods=["GET", "HEAD"])
 async def healthz():
     """Liveness + readiness probe. Reports Mongo + the shared rate-limit store.
     Unauthenticated, cheap, safe to poll from load balancers / uptime checks."""

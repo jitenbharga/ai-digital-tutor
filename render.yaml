@@ -10,8 +10,9 @@ services:
   - type: web
     name: ai-tutor-api
     runtime: docker
-    dockerfilePath: ./backend/Dockerfile
-    dockerContext: ./backend
+    rootDir: backend
+    dockerfilePath: backend/Dockerfile
+    dockerContext: backend
     region: singapore          # closest Render region to India
     plan: free                 # 512 MB — see memory note above
     healthCheckPath: /healthz

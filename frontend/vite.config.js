@@ -14,15 +14,11 @@ export default defineConfig({
     },
   },
   build: {
-    // W6: split heavy vendor libs into separate, independently-cacheable chunks.
-    // The old single 573 KB Markdown chunk bundled KaTeX + highlight.js + the
-    // remark/rehype stack together; splitting them lets the browser fetch them in
-    // parallel and keeps them cached across app-code deploys (they rarely change).
     rollupOptions: {
       output: {
         manualChunks(id) {
           if (!id.includes('node_modules')) return
-          if (id.includes('katex')) return 'katex'
+          if (id.includes('katex') || id.includes('rehype-katex')) return 'katex'
           if (
             id.includes('highlight.js') ||
             id.includes('lowlight') ||

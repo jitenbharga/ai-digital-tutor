@@ -12,7 +12,7 @@ export default defineConfig({
       output: {
         manualChunks(id) {
           if (!id.includes('node_modules')) return
-          if (id.includes('katex')) return 'katex'
+          if (id.includes('katex') || id.includes('rehype-katex')) return 'katex'
           if (
             id.includes('highlight.js') ||
             id.includes('lowlight') ||

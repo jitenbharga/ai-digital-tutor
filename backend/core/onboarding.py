@@ -1,5 +1,6 @@
 """
 Core Onboarding Engine — Placement session generation, adaptive questioning, and BKT mastery seeding.
+Version: 1.0.1
 """
 
 import uuid

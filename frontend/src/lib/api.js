@@ -49,7 +49,12 @@ async function parseBody(res) {
   const text = await res.text();
   if (!text) return {};
   try { return JSON.parse(text); }
-  catch { return { detail: text.slice(0, 300) }; }
+  catch {
+    if (text.includes('<html') || text.includes('<!DOCTYPE')) {
+      return { detail: 'Server is updating or starting up. Please wait a few seconds and try again.' };
+    }
+    return { detail: text.slice(0, 300) };
+  }
 }
 
 async function request(path, opts = {}, _retry = true) {

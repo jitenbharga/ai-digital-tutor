@@ -331,4 +331,12 @@ async def send_digest_now(
     content = await _build_guardian_digest(doc)
     if not content:
         raise HTTPException(400, "No linked children yet — redeem an invite first")
+
+    from core.emailer import send_email, emailer_configured
+    if emailer_configured() and content.get("email"):
+        try:
+            await send_email(content["email"], content.get("subject", "Weekly Learning Digest"), content.get("html", ""), content.get("text", ""))
+        except Exception as e:
+            logger.warning("Guardian digest send_email failed: %s", e)
+
     return {"ok": True, **content}

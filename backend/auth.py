@@ -359,11 +359,13 @@ async def forgot_password(request: Request, body: ForgotPasswordRequest):
     from repositories.users import UserRepository
     user = await UserRepository.get_by_username_or_email(ident)
     if not user:
+        print(f"[AUTH] forgot_password: No user account found for '{ident}'")
         logger.warning("forgot_password: No user account found for '%s'", ident)
         return generic
 
     email = user.get("email")
     if not email:
+        print(f"[AUTH] forgot_password: User '{user.get('username')}' has NO email on file!")
         logger.warning("forgot_password: User '%s' has no email on file", user.get("username"))
         return generic
 
@@ -374,16 +376,21 @@ async def forgot_password(request: Request, body: ForgotPasswordRequest):
     from core.emailer import send_email, emailer_configured
     from core.email_templates import password_reset_email
     if not emailer_configured():
+        print("[AUTH] forgot_password: BREVO_API_KEY is NOT set in environment variables!")
         logger.warning("forgot_password: Email service NOT configured (BREVO_API_KEY missing)")
     else:
         subject, html, text = password_reset_email(link)
         try:
+            print(f"[AUTH] forgot_password: Attempting send_email to {email}...")
             sent = await send_email(email, subject, html, text)
             if sent:
+                print(f"[AUTH] forgot_password: Reset email SUCCESS for {email}")
                 logger.info("forgot_password: Reset email successfully sent to %s", email)
             else:
+                print(f"[AUTH] forgot_password: send_email returned FALSE for {email}")
                 logger.warning("forgot_password: send_email returned False for %s", email)
         except Exception as e:
+            print(f"[AUTH] forgot_password: EXCEPTION for {email}: {e}")
             logger.error("forgot_password: send_email exception for %s: %s", email, e)
     return generic
 

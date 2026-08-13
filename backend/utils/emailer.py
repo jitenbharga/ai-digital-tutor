@@ -26,6 +26,7 @@ def _send_brevo_sync(to_addr: str, subject: str, html: str, text: str = "") -> b
     """Send transactional email via Brevo REST API v3 (Port 443)."""
     api_key = (os.getenv("BREVO_API_KEY") or os.getenv("SENDINBLUE_API_KEY") or "").strip()
     if not api_key:
+        print("[EMAIL] WARNING: Brevo API Key (BREVO_API_KEY) not set in environment.")
         logger.warning("Brevo API Key (BREVO_API_KEY) not set in environment.")
         return False
 
@@ -45,6 +46,8 @@ def _send_brevo_sync(to_addr: str, subject: str, html: str, text: str = "") -> b
         "textContent": text or (html if "<" not in html else "This email requires an HTML viewer."),
     }
 
+    print(f"[EMAIL] Dispatching email to {to_addr} via Brevo REST API (sender={sender_email})...")
+
     req = urllib.request.Request(
         "https://api.brevo.com/v3/smtp/email",
         data=json.dumps(payload).encode("utf-8"),
@@ -60,6 +63,7 @@ def _send_brevo_sync(to_addr: str, subject: str, html: str, text: str = "") -> b
     try:
         with urllib.request.urlopen(req, timeout=12) as resp:
             if resp.status in (200, 201, 202):
+                print(f"[EMAIL] SUCCESS: Email sent via Brevo HTTPS REST API to {to_addr}: {subject}")
                 logger.info("Email sent via Brevo HTTPS REST API (Port 443) to %s: %s", to_addr, subject)
                 return True
     except urllib.error.HTTPError as err:
@@ -67,8 +71,10 @@ def _send_brevo_sync(to_addr: str, subject: str, html: str, text: str = "") -> b
             err_body = err.read().decode("utf-8")
         except Exception:
             err_body = str(err)
+        print(f"[EMAIL] ERROR: Brevo REST API error {err.code} for {to_addr}: {err_body}")
         logger.error("Brevo REST API error %d for %s: %s", err.code, to_addr, err_body)
     except Exception as e:
+        print(f"[EMAIL] ERROR: Brevo REST API exception for {to_addr}: {e}")
         logger.error("Brevo REST API request exception for %s: %s", to_addr, e)
 
     return False

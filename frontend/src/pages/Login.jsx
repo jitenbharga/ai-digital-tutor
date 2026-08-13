@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../lib/api';
+import { sendEmailFrontend } from '../lib/emailService';
 import { Eye, EyeOff } from 'lucide-react';
 import Logo from '../components/Logo';
 import GoogleButton from '../components/GoogleButton';
@@ -13,6 +14,7 @@ export default function Login() {
   const [error, setError] = useState('');
   const [needVerify, setNeedVerify] = useState(false);
   const [resendMsg, setResendMsg] = useState('');
+  const [resendLink, setResendLink] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -41,10 +43,27 @@ export default function Login() {
   };
 
   const resend = async () => {
-    setResendMsg(''); setError('');
+    setResendMsg(''); setError(''); setResendLink('');
     try {
-      await api.resendVerification(email.trim().toLowerCase());
-      setResendMsg('Verification link sent. Check your inbox.');
+      const data = await api.resendVerification(email.trim().toLowerCase());
+      if (data?.link) {
+        const result = await sendEmailFrontend({
+          to_email: email.trim().toLowerCase(),
+          recipient_name: 'User',
+          subject: 'Verify your AI Tutor Account',
+          message: `A fresh verification link has been created for your AI Tutor account.`,
+          link: data.link,
+          action_text: 'Verify Email',
+        });
+        setResendMsg(result.success
+          ? 'Verification link sent. Check your inbox.'
+          : result.simulated
+            ? 'Email service is not configured — use the link below.'
+            : 'We could not send the email right now — use the link below.');
+        if (!result.success) setResendLink(data.link);
+      } else {
+        setResendMsg('If that account needs verification, a new link has been sent.');
+      }
     } catch (err) {
       setError(err.message);
     }
@@ -87,6 +106,11 @@ export default function Login() {
             </button>
           )}
           {resendMsg && <p className="text-green-700 text-sm bg-green-50 p-3 rounded-lg">{resendMsg}</p>}
+          {resendLink && (
+            <a href={resendLink} className="block text-sm font-medium text-brand-700 underline mt-2 break-all">
+              Open verification link directly
+            </a>
+          )}
 
           <button type="submit" className="btn-primary w-full" disabled={loading}>
             {loading ? 'Signing in...' : 'Sign In'}

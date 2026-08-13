@@ -40,8 +40,7 @@ Rotate on a schedule and immediately after any suspected exposure.
    provider dashboard, update `.env`, restart, then revoke the old key.
 3. **`MONGODB_URI` credentials.** Create a new DB user, update `.env`, restart,
    then drop the old user.
-4. **`SENTRY_DSN`, SMTP creds.** Rotate in the respective dashboards; update
-   `.env`; restart.
+4. **`SENTRY_DSN`.** Rotate in the Sentry dashboard; update `.env`; restart.
 
 After any rotation, confirm the old credential is fully revoked (not just
 replaced) and grep history/logs to ensure it was never committed. If a secret

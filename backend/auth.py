@@ -446,7 +446,7 @@ async def resend_verification(request: Request, body: ResendVerificationRequest)
     user = await UserRepository.get_by_email(email)
     if user and user.get("email") and not user.get("email_verified"):
         try:
-            generic["link"] = await _build_verification_link(user["username"])
+            generic["link"] = await _send_verification_email(user["username"], user.get("email", ""))
         except Exception as e:
             logger.warning("resend verification failed for %s: %s", user["username"], e)
     return generic

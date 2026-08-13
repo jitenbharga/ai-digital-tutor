@@ -29,8 +29,8 @@ def _send_brevo_sync(to_addr: str, subject: str, html: str, text: str = "") -> b
         logger.warning("Brevo API Key (BREVO_API_KEY) not set in environment.")
         return False
 
-    sender_email = (os.getenv("BREVO_SENDER_EMAIL") or os.getenv("SMTP_FROM") or "noreply@aidigitaltutor.com").strip()
-    sender_name = (os.getenv("BREVO_SENDER_NAME") or "AI Digital Tutor").strip()
+    sender_email = (os.getenv("BREVO_SENDER_EMAIL") or os.getenv("SMTP_FROM") or "jitenbharga40@gmail.com").strip()
+    sender_name = (os.getenv("BREVO_SENDER_NAME") or "AI TUTOR").strip()
 
     if "<" in sender_email and ">" in sender_email:
         parts = sender_email.split("<")

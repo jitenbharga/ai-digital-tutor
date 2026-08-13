@@ -4,7 +4,7 @@ import { api } from '../lib/api';
 import { sendEmailFrontend, emailServiceConfigured } from '../lib/emailService';
 import { Users, Eye, KeyRound, ChevronLeft, Mail } from 'lucide-react';
 
-/** B6: Weekly digest — built server-side, emailed from the browser (EmailJS) */
+/** B6: Weekly digest — built server-side, emailed from the browser (SMTP via smtp.js) */
 function DigestCard() {
   const [email, setEmail] = useState('');
   const [enabled, setEnabled] = useState(true);
@@ -42,8 +42,8 @@ function DigestCard() {
       setMsg(result.success
         ? `Sent to ${toEmail} — check your inbox.`
         : result.simulated
-          ? 'EmailJS is not configured (set VITE_EMAILJS_* in Vercel).'
-          : 'EmailJS could not send — check your EmailJS service/template.');
+          ? 'SMTP is not configured (set VITE_SMTP_* in Vercel).'
+          : 'SMTP could not send — check your SMTP settings.');
     } catch (err) { setMsg(err.message); }
     setBusy(false);
   };
@@ -54,11 +54,11 @@ function DigestCard() {
         <Mail size={18} /> Weekly Digest
       </h3>
       <p className="text-sm text-gray-500 mb-3">
-        Quizzes taken, scores, topics studied, mistakes fixed — per child. Sent from your browser via EmailJS.
+        Quizzes taken, scores, topics studied, mistakes fixed — per child. Sent from your browser via SMTP.
       </p>
       {!emailReady && (
         <p className="text-xs text-amber-700 bg-amber-50 rounded-lg p-2 mb-3">
-          EmailJS isn't configured — set VITE_EMAILJS_SERVICE_ID, VITE_EMAILJS_TEMPLATE_ID and VITE_EMAILJS_PUBLIC_KEY in Vercel.
+          SMTP isn't configured — set VITE_SMTP_HOST, VITE_SMTP_USER, VITE_SMTP_PASSWORD and VITE_SMTP_FROM in Vercel.
         </p>
       )}
       <div className="flex flex-wrap gap-3 items-center">

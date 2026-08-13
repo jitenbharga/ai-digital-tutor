@@ -1,9 +1,19 @@
-import torch
-import torch.nn as nn
-import torch.optim as optim
 import random
 import os
 import logging
+
+try:
+    import torch
+    import torch.nn as nn
+    import torch.optim as optim
+    HAS_TORCH = True
+    _ModuleBase = nn.Module
+except ImportError:
+    torch = None
+    nn = None
+    optim = None
+    HAS_TORCH = False
+    _ModuleBase = object
 
 logger = logging.getLogger("rl.dqn")
 
@@ -17,19 +27,24 @@ from utils.rl_metrics import RLMetrics
 # MODEL
 # ----------------------------------
 
-class DQN(nn.Module):
+class DQN(_ModuleBase):
 
     def __init__(self, state_dim=16, action_dim=36):
-        super().__init__()
-        self.net = nn.Sequential(
-            nn.Linear(state_dim, 256), nn.ReLU(),
-            nn.Linear(256, 256), nn.ReLU(),
-            nn.Linear(256, 128), nn.ReLU(),
-            nn.Linear(128, action_dim)
-        )
+        if HAS_TORCH:
+            super().__init__()
+            self.net = nn.Sequential(
+                nn.Linear(state_dim, 256), nn.ReLU(),
+                nn.Linear(256, 256), nn.ReLU(),
+                nn.Linear(256, 128), nn.ReLU(),
+                nn.Linear(128, action_dim)
+            )
+        else:
+            self.net = None
 
     def forward(self, x):
-        return self.net(x)
+        if HAS_TORCH and self.net is not None:
+            return self.net(x)
+        return None
 
 
 # ----------------------------------
@@ -50,17 +65,21 @@ class DQNAgent:
 
         # PERFORMANCE
         self.train_freq = 4
-        self.min_buffer = min_buffer  # lowered from 2000 for faster cold-start
+        self.min_buffer = min_buffer
 
-        # MODELS (16-dim state: 14 base + conversation_turns + last_mode)
-        self.model = DQN(state_dim=16, action_dim=len(action_space)).to(device)
-        self.target_model = DQN(state_dim=16, action_dim=len(action_space)).to(device)
-
-        self.target_model.load_state_dict(self.model.state_dict())
-        self.target_model.eval()
-
-        self.optimizer = optim.Adam(self.model.parameters(), lr=0.0003)
-        self.loss_fn = nn.MSELoss()
+        # MODELS
+        if HAS_TORCH:
+            self.model = DQN(state_dim=16, action_dim=len(action_space)).to(device)
+            self.target_model = DQN(state_dim=16, action_dim=len(action_space)).to(device)
+            self.target_model.load_state_dict(self.model.state_dict())
+            self.target_model.eval()
+            self.optimizer = optim.Adam(self.model.parameters(), lr=0.0003)
+            self.loss_fn = nn.MSELoss()
+        else:
+            self.model = None
+            self.target_model = None
+            self.optimizer = None
+            self.loss_fn = None
 
         self.replay_buffer = ReplayBuffer(20000, db_collection=db_collection)
         self.batch_size = 64
@@ -101,31 +120,25 @@ class DQNAgent:
             last_mode=getattr(student, "last_mode", 0),
         )
 
-        return torch.tensor(vec, dtype=torch.float32, device=device)
+        if HAS_TORCH:
+            return torch.tensor(vec, dtype=torch.float32, device=device)
+        return vec
 
     # ----------------------------------
     # ACTION
     # ----------------------------------
 
     def get_action(self, student, explore=True, serve_epsilon=0.0, kt_mastery=None):
-        """
-        Select an action for the given student state.
-
-        Args:
-            student: Student object with current state
-            explore: If True, use training epsilon (epsilon-greedy).
-                     If False, use serve_epsilon (greedy/near-greedy for production).
-            serve_epsilon: Small exploration rate for production serving (default 0.0 = pure greedy).
-                           Only used when explore=False.
-            kt_mastery: Optional KT-calibrated P(correct) to replace heuristic knowledge.
-        """
         state = self.get_state(student, kt_mastery=kt_mastery)
 
-        # Pick which epsilon to use
+        if not HAS_TORCH or self.model is None:
+            action_index = random.randrange(len(self.action_space))
+            return action_index, self.action_space[action_index]
+
         if explore:
-            eps = self.epsilon  # training epsilon (decays over time)
+            eps = self.epsilon
         else:
-            eps = serve_epsilon  # production: greedy or near-greedy
+            eps = serve_epsilon
 
         if random.random() < eps:
             action_index = random.randrange(len(self.action_space))
@@ -141,12 +154,18 @@ class DQNAgent:
     # ----------------------------------
 
     def store_transition(self, state, action, reward, next_state, done=False):
+        if HAS_TORCH:
+            st = torch.tensor(state, dtype=torch.float32)
+            nst = torch.tensor(next_state, dtype=torch.float32)
+        else:
+            st = state
+            nst = next_state
 
         self.replay_buffer.push(
-            torch.tensor(state, dtype=torch.float32),
+            st,
             action,
             reward,
-            torch.tensor(next_state, dtype=torch.float32),
+            nst,
             done
         )
 
@@ -155,6 +174,8 @@ class DQNAgent:
     # ----------------------------------
 
     def train_step(self):
+        if not HAS_TORCH or self.model is None:
+            return
 
         if len(self.replay_buffer) < self.min_buffer:
             return
@@ -209,6 +230,8 @@ class DQNAgent:
     # ----------------------------------
 
     def save_checkpoint(self, path="checkpoints/dqn_model.pt"):
+        if not HAS_TORCH or self.model is None:
+            return
         os.makedirs(os.path.dirname(path) or "checkpoints", exist_ok=True)
         torch.save({
             "model": self.model.state_dict(),
@@ -220,6 +243,8 @@ class DQNAgent:
         print("Full checkpoint saved (step=%d, eps=%.4f)" % (self.step_counter, self.epsilon))
 
     def load_checkpoint(self, path="checkpoints/dqn_model.pt"):
+        if not HAS_TORCH or self.model is None:
+            return False
         """
         Load checkpoint. Supports both new (dict with keys) and old (bare state_dict) formats.
         Returns True if loaded successfully, False if file not found.

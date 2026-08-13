@@ -15,13 +15,21 @@ import logging
 import os
 from typing import Dict, List, Optional, Tuple
 
-import torch
-import torch.nn as nn
+try:
+    import torch
+    import torch.nn as nn
+    HAS_TORCH = True
+    _ModuleBase = nn.Module
+except ImportError:
+    torch = None
+    nn = None
+    HAS_TORCH = False
+    _ModuleBase = object
 
 logger = logging.getLogger("knowledge_tracing.dkt")
 
 
-class DKTModel(nn.Module):
+class DKTModel(_ModuleBase):
     """
     Standard DKT architecture (Piech et al., 2015).
 

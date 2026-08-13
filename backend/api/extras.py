@@ -347,7 +347,7 @@ async def content_quality(
 
 
 # ======================================================================
-# B6: GUARDIAN WEEKLY DIGEST — SMTP email, weekly loop + send-now
+# B6: GUARDIAN WEEKLY DIGEST — content built server-side, emailed from the browser (EmailJS)
 # ======================================================================
 
 
@@ -360,42 +360,6 @@ async def content_quality(
 
 
 
-
-
-# ── Weekly scheduler: Sundays ~17:00 UTC, deduped per guardian per ISO week ──
-
-async def _weekly_digest_pass():
-    from datetime import datetime, timezone
-    from database import users_collection, digest_log_collection
-    from utils.emailer import smtp_configured
-    # digest send-logic now lives in the guardian router; imported lazily since
-    # this loop runs at startup, after all routers are loaded.
-    from routers.guardian import _send_guardian_digest
-
-    if not smtp_configured():
-        return
-    now = datetime.now(timezone.utc)
-    if now.weekday() != 6 or now.hour < 17:  # Sunday, 17:00+ UTC
-        return
-
-    iso = now.isocalendar()
-    week_key = f"{iso[0]}-W{iso[1]}"
-
-    async for g in users_collection.find(
-        {"role": "guardian", "digest_enabled": {"$ne": False},
-         "digest_email": {"$exists": True, "$ne": ""}}
-    ):
-        try:
-            # Unique (guardian, week) insert = distributed dedup lock
-            await digest_log_collection.insert_one({
-                "guardian": g["username"], "week": week_key, "sent_at": time.time(),
-            })
-        except Exception:
-            continue  # already sent this week (or race lost) — skip
-        try:
-            await _send_guardian_digest(g)
-        except Exception as e:
-            logger.error("weekly digest failed for %s: %s", g["username"], e)
 
 
 # ======================================================================
@@ -449,17 +413,15 @@ async def _nudge_pass():
     from database import (
         users_collection, exam_plans_collection, daily_goals_collection,
     )
-    from utils.emailer import send_email, smtp_configured
 
     today = date.today()
     today_key = today.isoformat()
 
     async for u in users_collection.find(
         {"role": "student", "nudges_enabled": {"$ne": False}},
-        {"username": 1, "digest_email": 1, "email_nudges": 1},
+        {"username": 1},
     ):
         sid = u["username"]
-        nudges = []
 
         # (a) Exam approaching with topics left
         async for plan in exam_plans_collection.find({"student_id": sid}):
@@ -475,8 +437,7 @@ async def _nudge_pass():
                     f"{remaining} studied topic{'s' if remaining != 1 else ''} to revise. "
                     f"~{mins} min today keeps you on track."
                 )
-                if await _make_nudge(sid, "exam", msg, f"exam:{plan.get('subject_id','')}:{today_key}"):
-                    nudges.append(msg)
+                await _make_nudge(sid, "exam", msg, f"exam:{plan.get('subject_id','')}:{today_key}")
 
         # (b) Streak at risk — alive but today's goal not met
         try:
@@ -488,18 +449,11 @@ async def _nudge_pass():
                     msg = (
                         f"Your {streak}-day streak resets tonight — one quick review keeps it alive."
                     )
-                    if await _make_nudge(sid, "streak", msg, f"streak:{today_key}"):
-                        nudges.append(msg)
+                    await _make_nudge(sid, "streak", msg, f"streak:{today_key}")
         except Exception:
             pass
-
-        # Optional email (opt-in + verified email + SMTP configured)
-        if nudges and u.get("email_nudges") and u.get("digest_email") and smtp_configured():
-            body = "<br>".join(nudges)
-            try:
-                await send_email(u["digest_email"], "A quick nudge from your AI Tutor", f"<p>{body}</p>", "\n".join(nudges))
-            except Exception as e:
-                logger.warning("nudge email failed for %s: %s", sid, e)
+    # No email here — the only email service in the app is EmailJS, which runs
+    # in the browser. Nudges surface in the in-app inbox (NotificationBell).
 
 
 @router.get("/me/notifications")
@@ -821,10 +775,6 @@ async def _start_digest_loop():
     async def _loop():
         last_nudge_day = None
         while True:
-            try:
-                await _weekly_digest_pass()
-            except Exception as e:
-                logger.warning("digest loop pass failed: %s", e)
             # C3: run the nudge pass once per day (first hourly tick after 08:00 UTC)
             try:
                 now = datetime.now(timezone.utc)

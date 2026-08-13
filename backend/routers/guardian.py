@@ -1,10 +1,10 @@
 """
 Guardian — parent/guardian access + weekly progress digest.
 Extracted from serve.py (invite / redeem / children / child overview) and
-api/extras.py (the /guardian/digest/* routes + their send helpers).
+api/extras.py (the /guardian/digest/* routes + their content helpers).
 
-The weekly digest *background loop* stays in api/extras.py (it is bundled with
-the daily nudge pass); it calls _send_guardian_digest here via a lazy import.
+The digest content is built here; the email itself is sent from the BROWSER
+via EmailJS (the app's only email service — there is no backend mailer).
 """
 
 import time
@@ -251,14 +251,16 @@ def _digest_html(guardian: str, summaries: list) -> str:
     </div>"""
 
 
-async def _send_guardian_digest(guardian_doc: dict) -> bool:
-    from utils.emailer import send_email
+async def _build_guardian_digest(guardian_doc: dict) -> dict:
+    """Build the weekly-digest content (subject + HTML + plain text).
 
+    The email itself is sent by the FRONTEND (EmailJS — the only email service
+    in the app). This returns the content; the browser emails it.
+    """
     username = guardian_doc["username"]
-    email = (guardian_doc.get("digest_email") or "").strip()
     children = guardian_doc.get("linked_children") or []
-    if not email or not children:
-        return False
+    if not children:
+        return {}
 
     summaries = [await _child_week_summary(c) for c in children]
     html = _digest_html(username, summaries)
@@ -266,7 +268,12 @@ async def _send_guardian_digest(guardian_doc: dict) -> bool:
         f"{s['child']}: {s['quizzes']} quizzes, avg {s['avg_score']}%, "
         f"{s['mistakes_resolved']} mistakes fixed" for s in summaries
     )
-    return await send_email(email, "Your weekly learning digest", html, text)
+    return {
+        "subject": "Your weekly learning digest",
+        "html": html,
+        "text": text,
+        "recipient_name": username,
+    }
 
 
 @router.post("/guardian/digest/prefs")
@@ -299,13 +306,11 @@ async def get_digest_prefs(
     current_user: dict = Depends(require_role("guardian")),
 ):
     from database import users_collection
-    from utils.emailer import smtp_configured
 
     doc = await users_collection.find_one({"username": current_user["username"]})
     return {
         "email": (doc or {}).get("digest_email", ""),
         "enabled": (doc or {}).get("digest_enabled", True),
-        "smtp_configured": smtp_configured(),
     }
 
 
@@ -313,20 +318,17 @@ async def get_digest_prefs(
 async def send_digest_now(
     current_user: dict = Depends(require_role("guardian")),
 ):
-    """Send this guardian's digest immediately (also serves as SMTP test)."""
+    """Return this guardian's digest content — the FRONTEND emails it via
+    EmailJS (the only email service in the app; there is no backend mailer)."""
     from database import users_collection
-    from utils.emailer import smtp_configured
-
-    if not smtp_configured():
-        raise HTTPException(503, "SMTP is not configured on the server (SMTP_HOST/USER/PASSWORD)")
 
     doc = await users_collection.find_one({"username": current_user["username"]})
-    if not doc or not doc.get("digest_email"):
-        raise HTTPException(400, "Set your digest email first")
+    if not doc:
+        raise HTTPException(404, "Guardian account not found")
     if not doc.get("linked_children"):
         raise HTTPException(400, "No linked children yet — redeem an invite first")
 
-    ok = await _send_guardian_digest(doc)
-    if not ok:
-        raise HTTPException(502, "Email send failed — check server SMTP settings/logs")
-    return {"ok": True, "sent_to": doc["digest_email"]}
+    content = await _build_guardian_digest(doc)
+    if not content:
+        raise HTTPException(400, "No linked children yet — redeem an invite first")
+    return {"ok": True, **content}

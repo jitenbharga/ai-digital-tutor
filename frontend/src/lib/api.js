@@ -1,4 +1,6 @@
-const BASE = '/api';
+// Production: vercel.json rewrites /api/* to the backend. Dev: optionally
+// point at a remote backend via VITE_DEV_API_URL (see frontend/.env.example).
+const BASE = import.meta.env.VITE_DEV_API_URL || '/api';
 
 // SEC-5: the access token is held only in memory (module scope), never in
 // localStorage — so a stored-XSS payload can't read it. The refresh token is

@@ -81,11 +81,3 @@ async def test_verify_token_roundtrip(wire_db):
 
     t = await create_token("heidi", PURPOSE_VERIFY, VERIFY_TOKEN_TTL_SECONDS)
     assert await consume_token(t, PURPOSE_VERIFY) == "heidi"
-
-
-# ── emailer dev fallback (no SMTP → logs, returns False, never raises) ───────
-def test_emailer_dev_fallback(monkeypatch):
-    monkeypatch.delenv("SMTP_HOST", raising=False)
-    from core.emailer import send_email
-
-    assert send_email("someone@example.com", "Subject", "Body") is False

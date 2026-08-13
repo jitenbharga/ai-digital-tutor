@@ -1,80 +1,68 @@
 /**
- * Frontend Email Service — Bypasses Render SMTP Port Blocking
+ * Frontend Email Service — SMTP-only, sent from the browser
  *
- * Sends emails directly from the browser over HTTPS (Port 443) using EmailJS or Resend API.
- * Environment Variables (optional in .env or Vercel dashboard):
+ * Browsers can't speak SMTP, so the SMTP account (Gmail etc.) is
+ * connected inside EmailJS (emailjs.com) and this module calls its HTTPS API
+ * over Port 443. This is the ONLY email service in the app — your SMTP
+ * credentials stay server-side on EmailJS, never in this bundle.
+ *
+ * Environment Variables (set in Vercel dashboard):
  *   VITE_EMAILJS_SERVICE_ID
  *   VITE_EMAILJS_TEMPLATE_ID
  *   VITE_EMAILJS_PUBLIC_KEY
- *   VITE_RESEND_API_KEY
  */
+
+export const emailServiceConfigured = () =>
+  Boolean(
+    import.meta.env.VITE_EMAILJS_SERVICE_ID &&
+    import.meta.env.VITE_EMAILJS_TEMPLATE_ID &&
+    import.meta.env.VITE_EMAILJS_PUBLIC_KEY
+  );
 
 /**
- * Send an email directly from the frontend browser over HTTPS (Port 443)
+ * Send an email from the browser via EmailJS (SMTP sandboxed on EmailJS' side).
  */
-export async function sendEmailFrontend({ to_email, subject, message, link, recipient_name = 'User' }) {
-  const emailjsServiceId = import.meta.env.VITE_EMAILJS_SERVICE_ID;
-  const emailjsTemplateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
-  const emailjsPublicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
-  const resendApiKey = import.meta.env.VITE_RESEND_API_KEY;
+export async function sendEmailFrontend({ to_email, subject, message, link, recipient_name = 'User', action_text = 'Open Link' }) {
+  const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID;
+  const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
+  const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
 
-  // 1. Try EmailJS via HTTPS REST API (Port 443)
-  if (emailjsServiceId && emailjsTemplateId && emailjsPublicKey) {
-    try {
-      const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          service_id: emailjsServiceId,
-          template_id: emailjsTemplateId,
-          user_id: emailjsPublicKey,
-          template_params: {
-            to_email,
-            to_name: recipient_name,
-            subject,
-            message,
-            action_link: link || '',
-          },
-        }),
-      });
-
-      if (response.ok) {
-        console.log(`[Frontend Email] EmailJS sent email to ${to_email}`);
-        return { success: true, provider: 'EmailJS' };
-      }
-    } catch (err) {
-      console.warn('[Frontend Email] EmailJS send failed:', err);
-    }
+  if (!serviceId || !templateId || !publicKey) {
+    console.info(`[Frontend Email] EmailJS not configured — email to ${to_email} skipped (${subject})`);
+    return { success: false, simulated: true, link };
   }
 
-  // 2. Try Resend via HTTPS API (Port 443)
-  if (resendApiKey) {
-    try {
-      const response = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${resendApiKey}`,
-          'Content-Type': 'application/json',
+  try {
+    const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        service_id: serviceId,
+        template_id: templateId,
+        user_id: publicKey,
+        template_params: {
+          to_email,
+          to_name: recipient_name,
+          subject,
+          message,
+          action_link: link || '',
+          action_text,
+          year: new Date().getFullYear(),
         },
-        body: JSON.stringify({
-          from: 'AI Tutor <onboarding@resend.dev>',
-          to: [to_email],
-          subject: subject,
-          html: `<p>Hello ${recipient_name},</p><p>${message}</p>${link ? `<p><a href="${link}">Click Here</a></p>` : ''}`,
-        }),
-      });
+      }),
+    });
 
-      if (response.ok) {
-        console.log(`[Frontend Email] Resend sent email to ${to_email}`);
-        return { success: true, provider: 'Resend' };
-      }
-    } catch (err) {
-      console.warn('[Frontend Email] Resend API failed:', err);
+    if (response.ok) {
+      console.log(`[Frontend Email] EmailJS sent email to ${to_email}`);
+      return { success: true, provider: 'EmailJS' };
     }
+    const errText = await response.text().catch(() => '');
+    console.warn(`[Frontend Email] EmailJS send failed (${response.status}): ${errText}`);
+  } catch (err) {
+    console.warn('[Frontend Email] EmailJS send failed:', err);
   }
 
-  console.info(`[Frontend Email] Email simulation to ${to_email}: ${subject} (Link: ${link})`);
-  return { success: false, simulated: true, link };
+  return { success: false, simulated: false, link };
 }
 
 /**
@@ -87,6 +75,7 @@ export async function sendVerificationEmail(to_email, username, verify_link) {
     subject: 'Verify your AI Tutor Account',
     message: `Thank you for signing up! Please verify your email to activate your AI Tutor account.`,
     link: verify_link,
+    action_text: 'Verify Email',
   });
 }
 
@@ -100,6 +89,7 @@ export async function sendPasswordResetEmail(to_email, username, reset_link) {
     subject: 'Reset your AI Tutor Password',
     message: `You requested a password reset. Click the link below to set a new password.`,
     link: reset_link,
+    action_text: 'Reset Password',
   });
 }
 
@@ -113,5 +103,6 @@ export async function sendGuardianInviteEmail(to_email, student_name, invite_cod
     subject: `Parent/Guardian Invite from ${student_name}`,
     message: `${student_name} has invited you to view their learning progress on AI Tutor. Your invite code is: ${invite_code}`,
     link: '',
+    action_text: 'Open AI Tutor',
   });
 }

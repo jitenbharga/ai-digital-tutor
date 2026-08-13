@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../lib/api';
+import { sendVerificationEmail } from '../lib/emailService';
 import { Eye, EyeOff, MailCheck } from 'lucide-react';
 import Logo from '../components/Logo';
 import GoogleButton from '../components/GoogleButton';
@@ -18,6 +19,7 @@ export default function Signup() {
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);   // show "check your email" screen
   const [resendMsg, setResendMsg] = useState('');
+  const [emailFallback, setEmailFallback] = useState(''); // link shown if email service is unconfigured
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -25,6 +27,25 @@ export default function Signup() {
     const role = data.role || 'student';
     login(data.username || '', data.access_token, role);
     navigate(role === 'guardian' ? '/guardian' : '/');
+  };
+
+  const emailVerification = async (toEmail, link) => {
+    if (!link) return;
+    try {
+      const result = await sendVerificationEmail(toEmail, username, link);
+      if (!result.success) {
+        setEmailFallback(link);
+        setResendMsg(result.simulated
+          ? 'Email service is not configured — use the link below to verify your email.'
+          : 'We could not send the verification email right now — use the link below.');
+      } else {
+        setEmailFallback('');
+        setResendMsg('');
+      }
+    } catch {
+      setEmailFallback(link);
+      setResendMsg('We could not send the verification email right now — use the link below.');
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -36,8 +57,9 @@ export default function Signup() {
     if (accountType === 'student' && !dob) { setError('Please enter your date of birth'); return; }
     setLoading(true);
     try {
-      await api.signup(username.trim(), password, accountType, dob, email.trim().toLowerCase());
+      const data = await api.signup(username.trim(), password, accountType, dob, email.trim().toLowerCase());
       setDone(true);
+      await emailVerification(email.trim().toLowerCase(), data?.verify_link);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -48,8 +70,9 @@ export default function Signup() {
   const resend = async () => {
     setResendMsg('');
     try {
-      await api.resendVerification(email.trim().toLowerCase());
+      const data = await api.resendVerification(email.trim().toLowerCase());
       setResendMsg('Sent again. Check your inbox (and spam).');
+      await emailVerification(email.trim().toLowerCase(), data?.link);
     } catch (err) {
       setError(err.message);
     }
@@ -68,6 +91,11 @@ export default function Signup() {
             Click it to activate your account, then sign in.
           </p>
           {resendMsg && <p className="text-green-700 text-sm bg-green-50 p-3 rounded-lg mt-4">{resendMsg}</p>}
+          {emailFallback && (
+            <a href={emailFallback} className="block text-sm font-medium text-brand-700 underline mt-2 break-all">
+              Open verification link directly
+            </a>
+          )}
           <button onClick={resend} className="w-full text-sm font-medium text-brand-700 bg-brand-50 hover:bg-brand-100 rounded-lg py-2 mt-5 transition-colors">
             Resend verification email
           </button>

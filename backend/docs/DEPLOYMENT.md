@@ -18,7 +18,7 @@ Provide via a secret store (not committed):
 | `AUTO_ENSURE_INDEXES` | prod=`0` | indexes owned by the migration step, not startup |
 | `SENTRY_DSN` | optional | error tracking (no-op if unset) |
 | `LOG_FORMAT` | optional | `json` for structured logs (ELK/Loki/CloudWatch) |
-| `SMTP_*` | optional | password-reset / verification / guardian digest email |
+| — | — | email is sent from the browser via **EmailJS** (`VITE_EMAILJS_*` in Vercel); the backend never sends mail |
 | `USER_CACHE_TTL_SECONDS` | optional | auth user-lookup cache TTL (default 30; 0 disables) |
 | `RETAIN_*_DAYS` | optional | telemetry retention |
 

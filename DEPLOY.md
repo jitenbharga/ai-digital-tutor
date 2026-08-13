@@ -103,12 +103,8 @@ MISTRAL_API_KEY_3: "..."
 GROQ_API_KEY_1: "..."
 GROQ_API_KEY_2: "..."
 GROQ_API_KEY_3: "..."
-# Email verification (Gmail: use an App Password, not your login password):
-SMTP_HOST: "smtp.gmail.com"
-SMTP_PORT: "587"
-SMTP_USER: "youraddress@gmail.com"
-SMTP_PASSWORD: "<gmail app password>"
-SMTP_FROM: "AI Tutor <youraddress@gmail.com>"
+# Email: sent from the FRONTEND via EmailJS (see frontend/.env.example —
+#   set VITE_EMAILJS_SERVICE_ID / TEMPLATE_ID / PUBLIC_KEY in Vercel).
 ```
 
 Add it to gitignore:
@@ -221,7 +217,7 @@ gcloud run deploy ai-tutor-api --source . --region asia-south1 \
 - **File uploads are ephemeral:** the Materials page writes to the container disk, which is wiped on restart. For persistent uploads add object storage (Cloudflare R2 free 10 GB, or Atlas GridFS) later.
 - **Rate-limit store is required in production:** with `ENVIRONMENT=production` the app **refuses to boot** unless `RATE_LIMIT_STORAGE_URI` is set (step 3b, free Upstash Redis). This keeps limits correct across Cloud Run's multiple instances.
 - **Secrets:** never commit `env.yaml` / `.env`. For extra safety, move secrets to **Google Secret Manager** and reference them with `--set-secrets` instead of `--env-vars-file`.
-- **Gmail SMTP:** use an **App Password** (Google Account → Security → 2-Step Verification → App passwords), not your normal password.
+- **Email:** no SMTP needed on the backend — all mail is sent from the browser via **EmailJS** (`VITE_EMAILJS_*` in Vercel; Gmail App Password is configured inside EmailJS, never in this repo).
 
 ---
 
@@ -235,7 +231,6 @@ gcloud run deploy ai-tutor-api --source . --region asia-south1 \
 | `ALLOWED_ORIGINS` | CORS — set to the frontend URL |
 | `GOOGLE_CLIENT_ID` | Verify Google sign-in tokens |
 | `MISTRAL_API_KEY_1..3`, `GROQ_API_KEY_1..3` | LLM pool |
-| `SMTP_HOST/PORT/USER/PASSWORD/FROM` | Email verification |
 | `ENVIRONMENT=production` | Prod behaviour |
 | `RATE_LIMIT_STORAGE_URI` | Shared rate-limit store (Redis) — **required** when `ENVIRONMENT=production` (free Upstash) |
 
@@ -244,4 +239,4 @@ gcloud run deploy ai-tutor-api --source . --region asia-south1 \
 | `SENTRY_DSN` | Error tracking |
 | `YOUTUBE_API_KEY`, `TAVILY_API_KEY`, `SEMANTIC_SCHOLAR_KEY` | Extra content sources |
 
-**Frontend (Vercel):** `VITE_GOOGLE_CLIENT_ID` only.
+**Frontend (Vercel):** `VITE_GOOGLE_CLIENT_ID`, `VITE_EMAILJS_SERVICE_ID`, `VITE_EMAILJS_TEMPLATE_ID`, `VITE_EMAILJS_PUBLIC_KEY`.

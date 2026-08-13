@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { usePreferences } from '../context/PreferencesContext';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Check, KeyRound, Copy } from 'lucide-react';
+import { ArrowLeft, Check, KeyRound, Copy, Mail, Send } from 'lucide-react';
 import { api } from '../lib/api';
+import { sendGuardianInviteEmail } from '../lib/emailService';
 import MemoryPanel from '../components/MemoryPanel';
 import { nudgesEnabled, enableNudges, disableNudges } from '../hooks/useSmartNudges';
 import { useTheme } from '../hooks/useTheme';
@@ -19,11 +20,15 @@ export default function Settings() {
   const [genLoading, setGenLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [inviteError, setInviteError] = useState('');
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [emailing, setEmailing] = useState(false);
+  const [emailNote, setEmailNote] = useState('');
 
   const generateInvite = async () => {
     setGenLoading(true);
     setInviteError('');
     setCopied(false);
+    setEmailNote('');
     try {
       const res = await api.generateGuardianInvite();
       setInviteCode(res.code);
@@ -32,6 +37,22 @@ export default function Settings() {
       setInviteError(e?.message || 'Could not generate a code. Please try again.');
     } finally {
       setGenLoading(false);
+    }
+  };
+
+  const emailInvite = async () => {
+    if (!inviteCode || !inviteEmail.trim()) return;
+    setEmailing(true);
+    setEmailNote('');
+    try {
+      const result = await sendGuardianInviteEmail(inviteEmail.trim(), prefs?.username || 'Your student', inviteCode);
+      setEmailNote(result.success
+        ? `Invite sent to ${inviteEmail.trim()}.`
+        : 'Email service is not configured — copy the code and share it manually.');
+    } catch {
+      setEmailNote('Could not send the invite email — copy the code and share it manually.');
+    } finally {
+      setEmailing(false);
     }
   };
 
@@ -228,6 +249,23 @@ export default function Settings() {
                     {copied ? <><Check size={15} /> Copied</> : <><Copy size={15} /> Copy</>}
                   </button>
                 </div>
+                <div className="flex items-center gap-2 mt-2">
+                  <input
+                    className="input-field flex-1"
+                    type="email"
+                    placeholder="guardian@email.com"
+                    value={inviteEmail}
+                    onChange={e => setInviteEmail(e.target.value)}
+                  />
+                  <button
+                    onClick={emailInvite}
+                    disabled={emailing || !inviteEmail.trim()}
+                    className="px-3 py-2 rounded-xl text-sm font-medium bg-brand-600 text-white shadow-sm hover:bg-brand-700 disabled:opacity-60 flex items-center gap-1 shrink-0"
+                  >
+                    {emailing ? <><Mail size={15} /> Sending…</> : <><Send size={15} /> Email invite</>}
+                  </button>
+                </div>
+                {emailNote && <p className="text-xs text-gray-500 mt-1">{emailNote}</p>}
                 <p className="text-xs text-gray-400 mt-2">
                   Valid for {inviteExp} · single use.{' '}
                   <button onClick={generateInvite} className="text-brand-600 hover:underline">Generate a new one</button>

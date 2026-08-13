@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../lib/api';
+import { sendPasswordResetEmail } from '../lib/emailService';
 import { BookOpen } from 'lucide-react';
 
 export default function ForgotPassword() {
   const [identifier, setIdentifier] = useState('');
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [fallbackLink, setFallbackLink] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -14,7 +16,11 @@ export default function ForgotPassword() {
     // Response is intentionally generic (no account enumeration), so we show the
     // same confirmation regardless of the outcome.
     try {
-      await api.forgotPassword(identifier);
+      const data = await api.forgotPassword(identifier);
+      if (data?.link) {
+        const result = await sendPasswordResetEmail(identifier, '', data.link);
+        if (!result.success) setFallbackLink(data.link);
+      }
     } catch {
       /* ignore — never reveal whether the account exists */
     }
@@ -34,10 +40,17 @@ export default function ForgotPassword() {
         </div>
 
         {sent ? (
-          <p role="status" className="text-center text-gray-600 bg-green-50 p-4 rounded-lg">
-            If a matching account with an email exists, a reset link has been sent.
-            Check your inbox.
-          </p>
+          <>
+            <p role="status" className="text-center text-gray-600 bg-green-50 p-4 rounded-lg">
+              If a matching account with an email exists, a reset link has been sent.
+              Check your inbox.
+            </p>
+            {fallbackLink && (
+              <a href={fallbackLink} className="block text-sm font-medium text-brand-700 underline mt-3 text-center break-all">
+                Open reset link directly
+              </a>
+            )}
+          </>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>

@@ -49,8 +49,12 @@ _storage_uri = os.getenv("RATE_LIMIT_STORAGE_URI", "").strip() or None
 # Guard against placeholder/comment leaks in .env (e.g. a line like
 # `RATE_LIMIT_STORAGE_URI=# e.g. redis://...`) or a value with no URL scheme —
 # slowapi/limits would raise ConfigurationError and crash boot. Fall back to the
-# in-memory store instead of dying.
-if _storage_uri and (_storage_uri.startswith("#") or "://" not in _storage_uri):
+# in-memory store instead of dying. Keep the built-in `memory://` scheme (it's a
+# valid limits storage URI) but treat it as "no shared store" for pinging/validation.
+_IS_MEMORY_URI = bool(_storage_uri and _storage_uri.startswith("memory://"))
+if _storage_uri and (
+    _storage_uri.startswith("#") or "://" not in _storage_uri
+):
     logger.warning(
         "Ignoring invalid RATE_LIMIT_STORAGE_URI=%r (not a URL) — using in-memory store",
         _storage_uri,
@@ -81,6 +85,8 @@ def ping_rate_limit_store() -> bool:
     True if reachable (or if using the in-memory store); False if a configured
     Redis is unreachable. Never raises — callers decide what to do."""
     if not _storage_uri:
+        return True
+    if _IS_MEMORY_URI:
         return True
     try:
         import redis

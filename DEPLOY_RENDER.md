@@ -81,7 +81,7 @@ python -c "import secrets; print(secrets.token_urlsafe(48))"
    - `ALLOWED_ORIGINS` = `https://ai-tutor.vercel.app`
    - `GOOGLE_CLIENT_ID` = `<id>.apps.googleusercontent.com`
    - `MISTRAL_API_KEY_1..3`, `GROQ_API_KEY_1..3`
-   - `SMTP_HOST=smtp.gmail.com`, `SMTP_PORT=587`, `SMTP_USER`, `SMTP_PASSWORD` (Gmail **App Password**), `SMTP_FROM`
+    - Email: sent from the BROWSER via **EmailJS** — set `VITE_EMAILJS_SERVICE_ID`, `VITE_EMAILJS_TEMPLATE_ID`, `VITE_EMAILJS_PUBLIC_KEY` in the **Vercel** dashboard. The backend never sends mail (it only generates links), so no SMTP vars are needed.
 4. **Create** → first build ~10–15 min (torch/faiss are large).
 
 > **No Blueprint?** New + → **Web Service** → connect repo → **Runtime: Docker** → Region **Singapore** → Instance **Free** → Health Check Path `/healthz` → add the env vars above → Create.
@@ -148,5 +148,5 @@ https://ai-tutor.vercel.app
 ---
 
 ## Env var reference (backend)
-**Required:** `MONGODB_URI`, `DB_NAME`, `SECRET_KEY`, `APP_BASE_URL`, `ALLOWED_ORIGINS`, `GOOGLE_CLIENT_ID`, `MISTRAL_API_KEY_1..3`, `GROQ_API_KEY_1..3`, `SMTP_HOST/PORT/USER/PASSWORD/FROM`, `ENVIRONMENT=production`.
-**Frontend (Vercel):** `VITE_GOOGLE_CLIENT_ID` only.
+**Required:** `MONGODB_URI`, `DB_NAME`, `SECRET_KEY`, `APP_BASE_URL`, `ALLOWED_ORIGINS`, `GOOGLE_CLIENT_ID`, `MISTRAL_API_KEY_1..3`, `GROQ_API_KEY_1..3`, `ENVIRONMENT=production`.
+**Frontend (Vercel):** `VITE_GOOGLE_CLIENT_ID`, `VITE_EMAILJS_SERVICE_ID`, `VITE_EMAILJS_TEMPLATE_ID`, `VITE_EMAILJS_PUBLIC_KEY`.

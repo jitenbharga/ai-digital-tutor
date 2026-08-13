@@ -47,7 +47,6 @@ content_stats_collection = db["content_stats"]      # B2: per concept/difficulty
 content_reports_collection = db["content_reports"]  # B2: student-flagged bad questions
 flashcards_collection = db["flashcards"]            # B3: FSRS-scheduled cards from mistakes + notes
 exam_plans_collection = db["exam_plans"]            # B4: exam-date back-planned schedules
-digest_log_collection = db["digest_log"]            # B6: guardian weekly digest dedup log
 notifications_collection = db["notifications"]       # C3: student re-engagement nudges
 cheatsheets_collection = db["cheatsheets"]           # D2/S3: cached smart cheat sheets
 user_materials_collection = db["user_materials"]    # S1: uploaded textbook chapters (chunks stored inline)
@@ -86,7 +85,6 @@ INDEX_SPECS = [
     ("flashcards_collection", [("student_id", 1), ("due_ts", 1)], {}),
     ("flashcards_collection", [("student_id", 1), ("source_id", 1)], {"unique": True}),
     ("exam_plans_collection", [("student_id", 1), ("subject_id", 1)], {"unique": True}),
-    ("digest_log_collection", [("guardian", 1), ("week", 1)], {"unique": True}),
     ("notifications_collection", [("student_id", 1), ("created_at", -1)], {}),
     ("notifications_collection", [("student_id", 1), ("dedup_key", 1)], {"unique": True}),
     ("cheatsheets_collection", [("student_id", 1), ("topic_key", 1)], {"unique": True}),
@@ -97,6 +95,23 @@ INDEX_SPECS = [
     ("auth_tokens_collection", "token", {"unique": True}),
     ("auth_tokens_collection", "expires_at", {"expireAfterSeconds": 0}),
 ]
+
+
+async def _drop_indexes_for_keys(coll, keys) -> None:
+    """Drop every existing index whose key pattern matches ``keys``.
+
+    MongoDB auto-generates index names (e.g. ``jti_1`` for ``"jti"``), so
+    guessing the name from the spec is brittle. Resolve the real names from
+    ``list_indexes()`` instead.
+    """
+    pattern = {keys: 1} if isinstance(keys, str) else dict(keys)
+    names = [
+        idx["name"]
+        async for idx in coll.list_indexes()
+        if idx.get("key") == pattern
+    ]
+    for name in names:
+        await coll.drop_index(name)
 
 
 async def ensure_indexes(raise_on_error: bool = False) -> dict:
@@ -121,12 +136,10 @@ async def ensure_indexes(raise_on_error: bool = False) -> dict:
         except Exception as e:
             # Handle index specification conflict (e.g. existing non-unique index upgraded to unique)
             err_msg = str(e)
-            if "IndexKeySpecsConflict" in err_msg or "IndexOptionsConflict" in err_msg or "same name" in err_msg:
+            if "IndexKeySpecsConflict" in err_msg or "IndexOptionsConflict" in err_msg or "same name" in err_msg or "already exists with different options" in err_msg:
                 try:
-                    index_name = opts.get("name") or (keys if isinstance(keys, str) else f"{keys[0][0]}_1")
-                    log.warning("Dropping conflicting index '%s' on %s to recreate: %s", index_name, var, e)
                     coll = getattr(mod, var)
-                    await coll.drop_index(index_name)
+                    await _drop_indexes_for_keys(coll, keys)
                     await coll.create_index(keys, **opts)
                     created += 1
                     continue

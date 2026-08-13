@@ -1,19 +1,20 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../lib/api';
+import { sendEmailFrontend, emailServiceConfigured } from '../lib/emailService';
 import { Users, Eye, KeyRound, ChevronLeft, Mail } from 'lucide-react';
 
-/** B6: Weekly email digest settings card */
+/** B6: Weekly digest — built server-side, emailed from the browser (EmailJS) */
 function DigestCard() {
   const [email, setEmail] = useState('');
   const [enabled, setEnabled] = useState(true);
-  const [smtpReady, setSmtpReady] = useState(true);
+  const [emailReady] = useState(emailServiceConfigured());
   const [msg, setMsg] = useState('');
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     api.getDigestPrefs()
-      .then(p => { setEmail(p.email || ''); setEnabled(p.enabled !== false); setSmtpReady(p.smtp_configured); })
+      .then(p => { setEmail(p.email || ''); setEnabled(p.enabled !== false); })
       .catch(() => {});
   }, []);
 
@@ -30,7 +31,19 @@ function DigestCard() {
     setBusy(true); setMsg('');
     try {
       const r = await api.sendDigestNow();
-      setMsg(`Sent to ${r.sent_to} — check your inbox.`);
+      const toEmail = email.trim();
+      if (!toEmail) { setMsg('Enter the guardian email address first.'); return; }
+      const result = await sendEmailFrontend({
+        to_email: toEmail,
+        recipient_name: r.recipient_name || 'Guardian',
+        subject: r.subject,
+        message: r.text,
+      });
+      setMsg(result.success
+        ? `Sent to ${toEmail} — check your inbox.`
+        : result.simulated
+          ? 'EmailJS is not configured (set VITE_EMAILJS_* in Vercel).'
+          : 'EmailJS could not send — check your EmailJS service/template.');
     } catch (err) { setMsg(err.message); }
     setBusy(false);
   };
@@ -38,14 +51,14 @@ function DigestCard() {
   return (
     <div className="card">
       <h3 className="font-semibold text-gray-900 mb-1 flex items-center gap-2">
-        <Mail size={18} /> Weekly Email Digest
+        <Mail size={18} /> Weekly Digest
       </h3>
       <p className="text-sm text-gray-500 mb-3">
-        Every Sunday: quizzes taken, scores, topics studied, mistakes fixed — per child.
+        Quizzes taken, scores, topics studied, mistakes fixed — per child. Sent from your browser via EmailJS.
       </p>
-      {!smtpReady && (
+      {!emailReady && (
         <p className="text-xs text-amber-700 bg-amber-50 rounded-lg p-2 mb-3">
-          Email sending isn't configured on the server yet (SMTP settings missing).
+          EmailJS isn't configured — set VITE_EMAILJS_SERVICE_ID, VITE_EMAILJS_TEMPLATE_ID and VITE_EMAILJS_PUBLIC_KEY in Vercel.
         </p>
       )}
       <div className="flex flex-wrap gap-3 items-center">
@@ -61,7 +74,7 @@ function DigestCard() {
           Weekly
         </label>
         <button onClick={save} className="btn-primary text-sm" disabled={busy || !email}>Save</button>
-        <button onClick={sendNow} className="btn-secondary text-sm" disabled={busy || !email || !smtpReady}>
+        <button onClick={sendNow} className="btn-secondary text-sm" disabled={busy || !email || !emailReady}>
           Send test now
         </button>
       </div>

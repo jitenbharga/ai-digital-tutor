@@ -358,19 +358,33 @@ async def forgot_password(request: Request, body: ForgotPasswordRequest):
         return generic
     from repositories.users import UserRepository
     user = await UserRepository.get_by_username_or_email(ident)
-    if user and user.get("email"):
-        email = user["email"]
-        token = await create_token(user["username"], PURPOSE_RESET, RESET_TOKEN_TTL_SECONDS)
-        link = f"{_APP_BASE_URL}/reset-password?token={token}"
-        generic["link"] = link
-        from core.emailer import send_email, emailer_configured
-        from core.email_templates import password_reset_email
-        if emailer_configured():
-            subject, html, text = password_reset_email(link)
-            try:
-                await send_email(email, subject, html, text)
-            except Exception as e:
-                logger.warning("Backend password reset send_email failed: %s", e)
+    if not user:
+        logger.warning("forgot_password: No user account found for '%s'", ident)
+        return generic
+
+    email = user.get("email")
+    if not email:
+        logger.warning("forgot_password: User '%s' has no email on file", user.get("username"))
+        return generic
+
+    token = await create_token(user["username"], PURPOSE_RESET, RESET_TOKEN_TTL_SECONDS)
+    link = f"{_APP_BASE_URL}/reset-password?token={token}"
+    generic["link"] = link
+
+    from core.emailer import send_email, emailer_configured
+    from core.email_templates import password_reset_email
+    if not emailer_configured():
+        logger.warning("forgot_password: Email service NOT configured (BREVO_API_KEY missing)")
+    else:
+        subject, html, text = password_reset_email(link)
+        try:
+            sent = await send_email(email, subject, html, text)
+            if sent:
+                logger.info("forgot_password: Reset email successfully sent to %s", email)
+            else:
+                logger.warning("forgot_password: send_email returned False for %s", email)
+        except Exception as e:
+            logger.error("forgot_password: send_email exception for %s: %s", email, e)
     return generic
 
 

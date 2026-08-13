@@ -72,11 +72,20 @@ async def _send_verification_email(username: str, email: str) -> str:
 
     token = await create_token(username, PURPOSE_VERIFY, VERIFY_TOKEN_TTL_SECONDS)
     link = f"{_APP_BASE_URL}/verify-email?token={token}"
-    if emailer_configured() and email:
+    if not emailer_configured():
+        print("[AUTH] _send_verification_email: BREVO_API_KEY is NOT set!", flush=True)
+    elif email:
         subject, html, text = verification_email(link)
         try:
-            await send_email(email, subject, html, text)
+            print(f"[AUTH] _send_verification_email: Dispatching verification email to {email}...", flush=True)
+            sent = await send_email(email, subject, html, text)
+            if sent:
+                print(f"[AUTH] _send_verification_email: Verification email SUCCESS for {email}", flush=True)
+                logger.info("Verification email sent to %s", email)
+            else:
+                print(f"[AUTH] _send_verification_email: send_email returned FALSE for {email}", flush=True)
         except Exception as e:
+            print(f"[AUTH] _send_verification_email: EXCEPTION for {email}: {e}", flush=True)
             logger.warning("Backend send_email failed for %s: %s", username, e)
     return link
 
@@ -121,8 +130,10 @@ async def signup(request: Request, user: UserIn):
         "verify_required": True,
     }
     if await UserRepository.exists(user.username):
+        print(f"[AUTH] signup: Username '{user.username}' is ALREADY TAKEN in database! Returning generic response without sending new email.", flush=True)
         return _generic_ok
     if await UserRepository.email_exists(user.email):
+        print(f"[AUTH] signup: Email '{user.email}' is ALREADY TAKEN in database! Returning generic response without sending new email.", flush=True)
         return _generic_ok
 
     # PRIVACY / data-minimization (GDPR-K): we only need to know the age *band*

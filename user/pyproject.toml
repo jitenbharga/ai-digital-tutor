@@ -20,8 +20,9 @@ dependencies = [
     "httpx>=0.26.0"
 ]
 
-[tool.setuptools.packages.find]
-where = ["."]
+[tool.setuptools]
+py-modules = ["serve", "auth", "auth_config", "database", "dependencies", "rate_limit", "security", "ai_proxy"]
+packages = ["api", "core", "repositories", "services"]
 
 [tool.vercel]
 entrypoint = "serve:app"

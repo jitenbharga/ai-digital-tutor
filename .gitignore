@@ -16,6 +16,7 @@ venv32/
 
 # Environment variables (keep .env.example tracked)
 .env
+.env.example
 .env.local
 .env.*.local
 .env.production

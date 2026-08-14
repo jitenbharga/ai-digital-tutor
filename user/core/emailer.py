@@ -30,6 +30,10 @@ def emailer_configured() -> bool:
     return get_brevo_client() is not None
 
 
+# Alias for backward compatibility
+smtp_configured = emailer_configured
+
+
 async def send_email(to_email: str, subject: str, html: str, text: str) -> bool:
     client = get_brevo_client()
     if not client:
@@ -37,8 +41,14 @@ async def send_email(to_email: str, subject: str, html: str, text: str) -> bool:
         return False
     try:
         import sib_api_v3_sdk
-        sender_email = os.getenv("BREVO_SENDER_EMAIL", "noreply@digitaltutor.app")
+        sender_email = (os.getenv("BREVO_SENDER_EMAIL") or os.getenv("SMTP_FROM") or "noreply@digitaltutor.app").strip()
         sender_name = os.getenv("BREVO_SENDER_NAME", "Digital Tutor")
+
+        if "<" in sender_email and ">" in sender_email:
+            parts = sender_email.split("<")
+            sender_name = parts[0].strip()
+            sender_email = parts[1].replace(">", "").strip()
+
         email = sib_api_v3_sdk.SendSmtpEmail(
             to=[{"email": to_email}],
             sender={"email": sender_email, "name": sender_name},

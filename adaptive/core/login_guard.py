@@ -28,7 +28,7 @@ def _now() -> datetime:
 
 async def assert_login_allowed(username: str) -> None:
     """Raise 429 (with Retry-After) if this username is currently locked out."""
-    from database import login_attempts_collection
+    from adaptive.database import login_attempts_collection
 
     doc = await login_attempts_collection.find_one({"username": username})
     if not doc:
@@ -51,7 +51,7 @@ async def assert_login_allowed(username: str) -> None:
 async def record_login_failure(username: str) -> None:
     """Atomically increment the failure counter; lock the account past the
     threshold. The doc auto-expires after the lockout/window via a TTL index."""
-    from database import login_attempts_collection
+    from adaptive.database import login_attempts_collection
 
     now = _now()
     expire_at = now + timedelta(seconds=LOGIN_LOCKOUT_SECONDS + LOGIN_WINDOW_SECONDS)
@@ -73,6 +73,6 @@ async def record_login_failure(username: str) -> None:
 
 async def clear_login_failures(username: str) -> None:
     """Reset counters after a successful login."""
-    from database import login_attempts_collection
+    from adaptive.database import login_attempts_collection
 
     await login_attempts_collection.delete_one({"username": username})

@@ -178,6 +178,20 @@ app.add_middleware(
     allow_headers=["Authorization", "Content-Type", "X-Request-ID"],
     allow_credentials=True,
 )
+class VercelPathMiddleware(BaseHTTPMiddleware):
+    """Normalize Vercel Serverless Function rewritten paths (e.g. /api/index.py -> /)."""
+
+    async def dispatch(self, request: Request, call_next):
+        path = request.scope.get("path", "")
+        if path in ("/api/index.py", "/api/index"):
+            matched_path = request.headers.get("x-matched-path", "/")
+            if matched_path in ("/api/index.py", "/api/index"):
+                matched_path = "/"
+            request.scope["path"] = matched_path
+        return await call_next(request)
+
+
+app.add_middleware(VercelPathMiddleware)
 app.add_middleware(RequestIDMiddleware)
 app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(MetricsMiddleware)
@@ -197,6 +211,8 @@ if ADAPTIVE_ENGINE_URL := os.getenv("ADAPTIVE_ENGINE_URL", "").strip():
 @app.api_route("/healthz", methods=["GET", "HEAD"])
 @app.api_route("/api", methods=["GET", "HEAD"])
 @app.api_route("/api/healthz", methods=["GET", "HEAD"])
+@app.api_route("/api/index.py", methods=["GET", "HEAD"])
+@app.api_route("/api/index", methods=["GET", "HEAD"])
 async def healthz():
     mongo_ok = True
     try:

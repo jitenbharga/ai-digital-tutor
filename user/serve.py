@@ -1,8 +1,20 @@
-import json
+import sys
 import os
+
+_current_dir = os.path.dirname(os.path.abspath(__file__))
+_parent_dir = os.path.dirname(_current_dir)
+if _current_dir not in sys.path:
+    sys.path.insert(0, _current_dir)
+if _parent_dir not in sys.path:
+    sys.path.insert(0, _parent_dir)
+
+import json
 import uuid
 from contextvars import ContextVar
-from user.database import client
+try:
+    from user.database import client
+except ImportError:
+    from database import client
 from fastapi import FastAPI, Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
 from user.auth import router as auth_router

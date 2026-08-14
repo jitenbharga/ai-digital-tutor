@@ -1,7 +1,5 @@
 {
   "version": 2,
-  "env": {
-    "ENVIRONMENT": "production",
-    "PYTHONPATH": "."
-  }
+  "env": { "ENVIRONMENT": "production", "PYTHONPATH": "." },
+  "rewrites": [{ "source": "/(.*)", "destination": "/api" }]
 }

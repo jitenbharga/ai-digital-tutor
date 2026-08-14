@@ -1,5 +1,5 @@
-"""
-T1.2 — Authorization contract test.
+﻿"""
+T1.2 â€” Authorization contract test.
 
 Introspects EVERY registered API route and asserts that any route not on an
 explicit PUBLIC allowlist declares an authentication guard in its dependency
@@ -10,10 +10,10 @@ Guard detection
 ---------------
 The app's guards all resolve to ``dependencies.get_current_user`` somewhere in
 their dependency subtree:
-  * ``get_current_user``               — direct auth dependency
-  * ``require_role(...)``              — inner _check Depends(get_current_user)
-  * ``require_self_or_guardian(...)``  — inner _check Depends(get_current_user)
-  * ``rate_limit.check_llm_budget``    — Depends(get_current_user)
+  * ``get_current_user``               â€” direct auth dependency
+  * ``require_role(...)``              â€” inner _check Depends(get_current_user)
+  * ``require_self_or_guardian(...)``  â€” inner _check Depends(get_current_user)
+  * ``rate_limit.check_llm_budget``    â€” Depends(get_current_user)
 So "a guard is present" == "get_current_user (or check_llm_budget) appears in the
 route's recursive dependency tree". We match by object identity, which is robust
 to the factory closures used by require_role / require_self_or_guardian.
@@ -31,10 +31,10 @@ from fastapi.routing import APIRoute
 
 # Paths allowed to have NO auth guard, each with a reason:
 PUBLIC_PATHS = frozenset({
-    # ── ops / health ──
+    # â”€â”€ ops / health â”€â”€
     "/healthz",                 # liveness probe
     "/metrics",                 # Prometheus scrape (secured/internal-only in Phase 4)
-    # ── unauthenticated auth flows (you cannot require a logged-in user to log in) ──
+    # â”€â”€ unauthenticated auth flows (you cannot require a logged-in user to log in) â”€â”€
     "/login",
     "/signup",
     "/refresh",                 # consumes a refresh token, not an access token
@@ -43,11 +43,11 @@ PUBLIC_PATHS = frozenset({
     "/verify-email",            # consumes an emailed one-time token
     "/verify-email/resend",     # public: an unverified user (can't log in yet) re-requests the link
     "/auth/google",             # Google sign-in: verifies a Google ID token, no prior session
-    # ── SSE stream: authenticated via a one-time stream-ticket token in the query
+    # â”€â”€ SSE stream: authenticated via a one-time stream-ticket token in the query
     #    string (EventSource can't send Authorization headers), issued by the
-    #    guarded /me/stream-ticket. Not a Depends() guard by design. ──
+    #    guarded /me/stream-ticket. Not a Depends() guard by design. â”€â”€
     "/tutor/stream",
-    # ── FastAPI built-ins ──
+    # â”€â”€ FastAPI built-ins â”€â”€
     "/openapi.json", "/docs", "/docs/oauth2-redirect", "/redoc",
 })
 
@@ -66,8 +66,8 @@ _INCLUDED_ROUTER_ATTRS = (
 
 def _guard_ids():
     """Object ids of the callables that count as an auth guard."""
-    import dependencies
-    import rate_limit
+    import adaptive.dependencies as dependencies
+    import adaptive.rate_limit as rate_limit
     ids = {id(dependencies.get_current_user)}
     budget = getattr(rate_limit, "check_llm_budget", None)
     if budget is not None:
@@ -110,8 +110,8 @@ def app_smoke_env():
     """Engines build an LLM client at construction, so at least one provider key
     must exist for serve.py to import. LLM calls are never made by this test."""
     import os
-    os.environ.setdefault("GEMINI_API_KEY", "test-dummy-key")
-    os.environ.setdefault("GOOGLE_API_KEY", "test-dummy-key")
+    os.environ.setdefault("MISTRAL_API_KEY_1", "test-dummy-key")
+    os.environ.setdefault("GROQ_API_KEY_1", "test-dummy-key")
     os.environ.setdefault("ENVIRONMENT", "test")
     yield
 
@@ -134,7 +134,7 @@ def test_every_nonpublic_route_declares_a_guard(app_built):
         if not _is_guarded(route, guard_ids):
             offenders.append(f"{sorted(m for m in route.methods if m != 'HEAD')} {route.path}")
     # Sanity: we must have actually enumerated the full surface, not just a slice.
-    assert checked >= 130, f"only enumerated {checked} routes — enumeration is incomplete"
+    assert checked >= 130, f"only enumerated {checked} routes â€” enumeration is incomplete"
     assert not offenders, (
         "These non-public routes declare no auth guard "
         "(add get_current_user/require_role/require_self_or_guardian/check_llm_budget, "
@@ -145,17 +145,17 @@ def test_every_nonpublic_route_declares_a_guard(app_built):
 def test_guard_detection_bites(app_built):
     """Prove both directions: an unguarded route is flagged, a guarded one passes.
 
-    This is the "fails if a guard is removed" proof — removing get_current_user
+    This is the "fails if a guard is removed" proof â€” removing get_current_user
     from a route makes _is_guarded() return False, which the scan above reports
     as an offender.
     """
     from fastapi import FastAPI, Depends
-    from dependencies import get_current_user
+    from adaptive.dependencies import get_current_user
 
     probe = FastAPI()
 
     @probe.get("/leaky")
-    def leaky():                       # no guard — simulates a forgotten Depends
+    def leaky():                       # no guard â€” simulates a forgotten Depends
         return {}
 
     @probe.get("/safe")

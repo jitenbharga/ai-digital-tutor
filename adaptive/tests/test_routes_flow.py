@@ -1,5 +1,5 @@
-"""
-T1.1 — end-to-end learning-loop route test (mongomock + fake-LLM harness).
+﻿"""
+T1.1 â€” end-to-end learning-loop route test (mongomock + fake-LLM harness).
 
 Exercises the core student journey through real handler + engine + persistence
 code: start a subject, read the curriculum, complete/skip a node, generate a
@@ -21,11 +21,11 @@ STUDENT = {
 
 @pytest.fixture(scope="module")
 def flow():
-    os.environ.setdefault("GEMINI_API_KEY", "test-dummy-key")
-    os.environ.setdefault("GOOGLE_API_KEY", "test-dummy-key")
+    os.environ.setdefault("MISTRAL_API_KEY_1", "test-dummy-key")
+    os.environ.setdefault("GROQ_API_KEY_1", "test-dummy-key")
     os.environ.setdefault("ENVIRONMENT", "test")
     import serve
-    from dependencies import get_current_user
+    from adaptive.dependencies import get_current_user
     from mongomock_motor import AsyncMongoMockClient
 
     mockdb = AsyncMongoMockClient()["t"]

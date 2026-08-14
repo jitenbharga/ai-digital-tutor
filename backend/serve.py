@@ -181,11 +181,19 @@ app.add_middleware(MetricsMiddleware)  # W8: outermost — measures full request
 
 app.include_router(auth_router)
 
-# ── Service 1 (Vercel Auth Gateway) / Service 2 (Render AI Engine) Split ──
-from ai_proxy import proxy_router, AI_ENGINE_URL
-if AI_ENGINE_URL:
-    logger.info("Vercel Auth Gateway Mode active — Proxying AI requests to Render AI Engine (%s)", AI_ENGINE_URL)
-    app.include_router(proxy_router)
+try:
+    from ai_proxy import proxy_router, AI_ENGINE_URL
+    if AI_ENGINE_URL:
+        logger.info("Vercel Auth Gateway Mode active — Proxying AI requests to Render AI Engine (%s)", AI_ENGINE_URL)
+        app.include_router(proxy_router)
+except ImportError:
+    try:
+        from backend.ai_proxy import proxy_router, AI_ENGINE_URL
+        if AI_ENGINE_URL:
+            logger.info("Vercel Auth Gateway Mode active — Proxying AI requests to Render AI Engine (%s)", AI_ENGINE_URL)
+            app.include_router(proxy_router)
+    except ImportError:
+        pass
 
 from api.extras import router as extras_router  # memory, daily-session, code-feedback
 app.include_router(extras_router)

@@ -15,7 +15,7 @@ services:
       - key: MONGODB_URI
         sync: false
       - key: DB_NAME
-        value: digital_tutor
+        value: adaptive_learning
       - key: ACCESS_TOKEN_EXPIRE_MINUTES
         value: "15"
       - key: REFRESH_TOKEN_EXPIRE_DAYS
@@ -25,17 +25,19 @@ services:
       - key: RESET_TOKEN_TTL_SECONDS
         value: "3600"
       - key: RATE_LIMIT_STORAGE_URI
-        sync: false
+        value: memory://
       - key: RATE_LIMIT_DEFAULT
         value: "120/minute"
       - key: LLM_DAILY_REQUEST_CAP
         value: "300"
+      - key: RL_ONLINE_LEARNING
+        value: "0"
       - key: ALLOWED_ORIGINS
-        value: "https://your-frontend.vercel.app"
+        value: "https://ai-digital-tutor.vercel.app"
       - key: BREVO_API_KEY
         sync: false
       - key: BREVO_SENDER_EMAIL
-        value: "noreply@yourdomain.com"
+        value: "AI TUTOR <jitenbharga40@gmail.com>"
       - key: BREVO_SENDER_NAME
         value: "Digital Tutor"
       - key: APP_BASE_URL

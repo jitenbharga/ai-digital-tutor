@@ -1,0 +1,67 @@
+# ============================================================
+# DIGITAL TUTOR — Adaptive Engine runtime config
+# All engine flags are ON. Training runs locally (scripts);
+# Render only loads the shipped checkpoints — no training.
+# ============================================================
+
+features:
+  rl_enabled: true
+  gamification_enabled: true
+  quests_enabled: true
+  guardian_enabled: true
+  certificates_enabled: true
+  dkt_enabled: true
+  voice_enabled: true
+  leaderboard_enabled: true
+
+llm:
+  temperature: 0.7
+  max_retries: 2
+  primary_model: mistral
+  cache:
+    enabled: true
+    max_size: 512
+    ttl_seconds: 600
+  retry:
+    backoff_base: 0.5
+    backoff_cap: 8.0
+    rate_limit_cooldown: 30.0
+  evaluator:
+    confidence_threshold: 0.75
+    max_samples: 3
+  routing:
+    cheap_engines:
+      - answer_evaluator
+      - answer_verifier
+      - leakage_guard
+      - prerequisite_engine
+      - knowledge_graph
+      - review_engine
+      - quiz_engine
+  hedge:
+    enabled: false
+    n: 2
+    tiers:
+      - strong
+
+mastery:
+  prerequisite_threshold: 0.7
+  enforce_gating: true
+
+mentor:
+  name: Sage
+  encouragement_style: warm and supportive, celebrating effort over perfection
+  memory_limit: 10
+
+rl:
+  min_buffer: 500
+  epsilon_start: 1.0
+  epsilon_end: 0.05
+  epsilon_decay: 0.999
+
+training:
+  episodes: 10000
+  max_steps_per_episode: 50
+  checkpoint_freq: 1000
+  log_interval: 100
+  checkpoint_path: checkpoints/dqn_model.pt

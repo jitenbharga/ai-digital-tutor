@@ -1,5 +1,5 @@
-"""
-T1.1 (template) — happy-path route tests via mongomock-motor + dependency_overrides.
+﻿"""
+T1.1 (template) â€” happy-path route tests via mongomock-motor + dependency_overrides.
 
 This is the reusable pattern for driving serve's routes toward the 80% coverage
 target: wire an in-memory async Mongo into every loaded module's collection
@@ -7,7 +7,7 @@ handles, inject the current user with dependency_overrides, seed only what a
 route reads, and assert the real response. Extend group by group (quiz,
 curriculum, gamification, mastery, materials, ...).
 
-Runs fully in-process — no torch/LLM/real Mongo. Routes that call the LLM are
+Runs fully in-process â€” no torch/LLM/real Mongo. Routes that call the LLM are
 out of scope for this template (they need a fake-LLM seam); these cover the
 read/query surface.
 """
@@ -36,7 +36,7 @@ def _run(coro):
 def _wire_all_collections(mockdb):
     """Point EVERY loaded module's `*_collection` / `students_col` handle at the
     in-memory db. Modules bind these at import (`from database import X`), so a
-    single database-level patch isn't enough — we patch every importer."""
+    single database-level patch isn't enough â€” we patch every importer."""
     patched = 0
     for module in list(sys.modules.values()):
         ns = getattr(module, "__dict__", None)
@@ -54,8 +54,8 @@ def _wire_all_collections(mockdb):
 
 @pytest.fixture(scope="module")
 def _env():
-    os.environ.setdefault("GEMINI_API_KEY", "test-dummy-key")
-    os.environ.setdefault("GOOGLE_API_KEY", "test-dummy-key")
+    os.environ.setdefault("MISTRAL_API_KEY_1", "test-dummy-key")
+    os.environ.setdefault("GROQ_API_KEY_1", "test-dummy-key")
     os.environ.setdefault("ENVIRONMENT", "test")
 
 
@@ -63,7 +63,7 @@ def _env():
 def api(_env):
     """Yield (client, mockdb). Fresh in-memory db per test; user = STUDENT."""
     import serve
-    from dependencies import get_current_user
+    from adaptive.dependencies import get_current_user
     from mongomock_motor import AsyncMongoMockClient
 
     mockdb = AsyncMongoMockClient()["t"]
@@ -76,7 +76,7 @@ def api(_env):
         serve.app.dependency_overrides.pop(get_current_user, None)
 
 
-# ───────────────────── read routes that need no seed ─────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ read routes that need no seed â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class TestReadRoutesNoSeed:
     def test_subjects_lists_all(self, api):
@@ -104,7 +104,7 @@ class TestReadRoutesNoSeed:
         assert isinstance(r.json(), dict)
 
 
-# ───────────────────── read routes exercised with seeded data ─────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ read routes exercised with seeded data â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class TestReadRoutesWithSeed:
     def test_progress_self_after_seeding_state(self, api):
@@ -127,11 +127,11 @@ class TestReadRoutesWithSeed:
         assert after[subj] is True
 
 
-# ───────────────────── empty-state contract (404 when absent) ─────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ empty-state contract (404 when absent) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class TestEmptyStateContract:
     @pytest.mark.parametrize("path", ["/me/gamification", "/gamification/student_a"])
     def test_missing_gamification_state_is_404_not_500(self, api, path):
         client, _ = api
-        # No state seeded → a clean 404 (handled), never an unhandled 500.
+        # No state seeded â†’ a clean 404 (handled), never an unhandled 500.
         assert client.get(path).status_code == 404

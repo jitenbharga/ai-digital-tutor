@@ -203,15 +203,9 @@ app.add_middleware(MetricsMiddleware)
 
 app.include_router(auth_router)
 
-try:
-    from user.ai_proxy import proxy_router
-except ImportError:
-    from ai_proxy import proxy_router
-
-if ADAPTIVE_ENGINE_URL := os.getenv("ADAPTIVE_ENGINE_URL", "").strip():
-    logger.info("Auth Gateway Mode active — Proxying AI requests to Adaptive Engine (%s)", ADAPTIVE_ENGINE_URL)
-    app.include_router(proxy_router)
-
+# Health checks and metrics MUST be registered BEFORE the proxy catch-all
+# (/{path:path}) so Vercel/UptimeRobot probes are answered locally and never
+# forwarded to the adaptive engine (which would 404 them).
 @app.api_route("/", methods=["GET", "HEAD"])
 @app.api_route("/healthz", methods=["GET", "HEAD"])
 @app.api_route("/api", methods=["GET", "HEAD"])
@@ -256,6 +250,16 @@ async def metrics():
     except ImportError:
         from core.metrics import render, CONTENT_TYPE_LATEST
     return Response(content=render(), media_type=CONTENT_TYPE_LATEST)
+
+
+try:
+    from user.ai_proxy import proxy_router
+except ImportError:
+    from ai_proxy import proxy_router
+
+if ADAPTIVE_ENGINE_URL := os.getenv("ADAPTIVE_ENGINE_URL", "").strip():
+    logger.info("Auth Gateway Mode active — Proxying AI requests to Adaptive Engine (%s)", ADAPTIVE_ENGINE_URL)
+    app.include_router(proxy_router)
 
 
 @app.on_event("startup")

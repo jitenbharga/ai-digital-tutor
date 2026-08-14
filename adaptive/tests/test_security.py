@@ -1,13 +1,13 @@
-"""
+﻿"""
 Security regression tests for the July 2026 hardening pass.
 
 Covers the pure, dependency-light logic behind the fixes so they can run in CI
 without a live Mongo/LLM (see conftest.py stubs):
 
-  * SEC-1  IDOR — require_self_or_guardian: A cannot read/write B's data
-  * SEC-2  ReDoS — safe_topic_filter escapes user regex + caps length
-  * SEC-4  Upload — magic-byte verification rejects mislabeled/binary files
-  * SEC-4  Upload — safe basename strips path traversal
+  * SEC-1  IDOR â€” require_self_or_guardian: A cannot read/write B's data
+  * SEC-2  ReDoS â€” safe_topic_filter escapes user regex + caps length
+  * SEC-4  Upload â€” magic-byte verification rejects mislabeled/binary files
+  * SEC-4  Upload â€” safe basename strips path traversal
 
 Integration tests for the 429 paths (rate-limit and daily budget) require a
 running app + Mongo and are exercised via test_endpoints.py against a live
@@ -28,10 +28,10 @@ def _req(**path_params):
     return SimpleNamespace(path_params=path_params, query_params={})
 
 
-# ── SEC-1: IDOR ───────────────────────────────────────────────────────────
+# â”€â”€ SEC-1: IDOR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_idor_self_allowed():
-    from dependencies import require_self_or_guardian
+    from adaptive.dependencies import require_self_or_guardian
     check = require_self_or_guardian("student_id")
     user = {"username": "alice", "role": "student"}
     assert _run(check(_req(student_id="alice"), user)) is user
@@ -39,7 +39,7 @@ def test_idor_self_allowed():
 
 def test_idor_other_student_forbidden():
     from fastapi import HTTPException
-    from dependencies import require_self_or_guardian
+    from adaptive.dependencies import require_self_or_guardian
     check = require_self_or_guardian("student_id")
     attacker = {"username": "attacker", "role": "student"}
     with pytest.raises(HTTPException) as ei:
@@ -48,7 +48,7 @@ def test_idor_other_student_forbidden():
 
 
 def test_idor_guardian_of_child_allowed():
-    from dependencies import require_self_or_guardian
+    from adaptive.dependencies import require_self_or_guardian
     check = require_self_or_guardian("student_id")
     guardian = {"username": "mom", "role": "guardian", "linked_children": ["kid"]}
     assert _run(check(_req(student_id="kid"), guardian)) is guardian
@@ -56,7 +56,7 @@ def test_idor_guardian_of_child_allowed():
 
 def test_idor_guardian_of_other_child_forbidden():
     from fastapi import HTTPException
-    from dependencies import require_self_or_guardian
+    from adaptive.dependencies import require_self_or_guardian
     check = require_self_or_guardian("student_id")
     guardian = {"username": "mom", "role": "guardian", "linked_children": ["kid"]}
     with pytest.raises(HTTPException) as ei:
@@ -64,7 +64,7 @@ def test_idor_guardian_of_other_child_forbidden():
     assert ei.value.status_code == 403
 
 
-# ── SEC-2: regex injection / ReDoS ─────────────────────────────────────────
+# â”€â”€ SEC-2: regex injection / ReDoS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_safe_topic_filter_escapes_evil_regex():
     from utils.mongo_safe import safe_topic_filter
@@ -85,7 +85,7 @@ def test_exact_topic_value_normalizes():
     assert exact_topic_value("  Calculus  ") == "calculus"
 
 
-# ── SEC-4: upload hardening ────────────────────────────────────────────────
+# â”€â”€ SEC-4: upload hardening â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def test_magic_bytes_pdf_ok():
     from core.user_materials import verify_magic_bytes

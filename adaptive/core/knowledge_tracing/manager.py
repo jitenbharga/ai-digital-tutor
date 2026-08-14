@@ -34,7 +34,7 @@ class KnowledgeTracingManager:
     def __init__(self, dkt_checkpoint: str = "checkpoints/dkt_model.pt"):
         # Kill List K3: DKT removed from hot path unless DKT_ENABLED=true
         if DKT_ENABLED:
-            from core.knowledge_tracing.dkt import DKTPredictor
+            from adaptive.core.knowledge_tracing.dkt import DKTPredictor
             self.dkt = DKTPredictor(dkt_checkpoint)
             self._dkt_loaded = self.dkt.load()
         else:

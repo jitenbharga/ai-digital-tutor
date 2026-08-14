@@ -100,7 +100,7 @@ async function request(path, opts = {}, _retry = true) {
 export const api = {
   // Auth
   signup: (username, password, account_type = 'student', date_of_birth = '', email = '') =>
-    request('/signup', { method: 'POST', body: JSON.stringify({ username, password, account_type, date_of_birth, email }) }),
+    request('/signup', { method: 'POST', body: JSON.stringify({ username, password, account_type, date_of_birth: date_of_birth || null, email }) }),
 
   // W3: account recovery
   forgotPassword: (identifier) =>

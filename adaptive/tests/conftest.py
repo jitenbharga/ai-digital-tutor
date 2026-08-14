@@ -16,6 +16,10 @@ if ROOT not in sys.path:
 os.environ.setdefault("MONGODB_URI", "mongodb://localhost:27017")
 os.environ.setdefault("DB_NAME", "test_db")
 os.environ.setdefault("SECRET_KEY", "test-secret-key-for-jwt")
+os.environ.setdefault("JWT_SECRET_KEY", "test-secret-key-for-jwt-0123456789abcdef")
+os.environ.setdefault("MISTRAL_API_KEY_1", "test-dummy-key")
+os.environ.setdefault("GROQ_API_KEY_1", "test-dummy-key")
+os.environ.setdefault("ENVIRONMENT", "test")
 
 # ═══════════════════════════════════════════
 # TORCH STUBS

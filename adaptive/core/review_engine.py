@@ -17,6 +17,8 @@ import time
 from datetime import datetime, timezone, timedelta
 from typing import Dict, List, Optional
 
+logger = logging.getLogger(__name__)
+
 try:
     from fsrs import Scheduler, Card, Rating, State
     _scheduler = Scheduler(

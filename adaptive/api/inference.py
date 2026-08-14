@@ -21,7 +21,7 @@ from adaptive.core.leakage_guard import classify_message, get_redirect_response,
 from adaptive.core.mentor import load_memory, save_memory_item, build_mentor_directive, extract_memory_facts
 from adaptive.utils.tone import get_tone_directive
 from adaptive.utils.language import get_language_directive
-from adaptive.config.features import RL_ENABLED
+from adaptive.config.features import RL_ENABLED, RL_ONLINE_LEARNING
 from adaptive.core.ab_experiment import (
     get_experiment_manager, RL_VS_RULE_EXPERIMENT,
     ARM_CONTROL, ARM_TREATMENT,
@@ -759,7 +759,10 @@ class ProductionTutor:
         elif ab_arm is None:
             use_dqn_learn = RL_ENABLED
 
-        if use_dqn_learn:
+        # Production: online learning is disabled — DQN serves the shipped
+        # checkpoint but never updates weights from live traffic (training is
+        # local only). Transitions are still logged for offline training.
+        if use_dqn_learn and RL_ONLINE_LEARNING:
             self.agent.store_transition(state, action, reward, next_state, done=False)
             self.agent.train_step()
 

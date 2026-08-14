@@ -1,5 +1,5 @@
-"""
-T1.3 — IDOR / negative-authorization tests.
+﻿"""
+T1.3 â€” IDOR / negative-authorization tests.
 
 For every ``/{student_id}`` route guarded by ``require_self_or_guardian``, prove
 the authorization decision holds:
@@ -8,11 +8,11 @@ the authorization decision holds:
   * the owning student -> NOT rejected by the guard
   * a linked guardian  -> NOT rejected by the guard
 
-Auth is injected with ``app.dependency_overrides[get_current_user]`` — no JWT or
+Auth is injected with ``app.dependency_overrides[get_current_user]`` â€” no JWT or
 users collection needed. The guard runs as a dependency (before the handler), so
 denied cases return 403 without touching the database. Allowed cases fall through
 to the handler; we only assert they are *not* 403 (the handler may 4xx/5xx under
-the stubbed DB — that still proves the guard let the request through).
+the stubbed DB â€” that still proves the guard let the request through).
 
 This locks in dependencies.py::require_self_or_guardian.
 """
@@ -42,11 +42,11 @@ GUARDIAN_UNLINKED = {"username": "guardian_h", "role": "guardian", "linked_child
 
 @pytest.fixture(scope="module")
 def route_client():
-    os.environ.setdefault("GEMINI_API_KEY", "test-dummy-key")
-    os.environ.setdefault("GOOGLE_API_KEY", "test-dummy-key")
+    os.environ.setdefault("MISTRAL_API_KEY_1", "test-dummy-key")
+    os.environ.setdefault("GROQ_API_KEY_1", "test-dummy-key")
     os.environ.setdefault("ENVIRONMENT", "test")
     import serve
-    from dependencies import get_current_user
+    from adaptive.dependencies import get_current_user
 
     app = serve.app
     client = TestClient(app, raise_server_exceptions=False)

@@ -1,5 +1,5 @@
-"""
-T1.1 — mutation + LLM-backed route tests (mongomock + fake-LLM harness).
+﻿"""
+T1.1 â€” mutation + LLM-backed route tests (mongomock + fake-LLM harness).
 
 Exercises write endpoints and the LLM-backed learning routes end-to-end with a
 deterministic fake LLM (route_harness.install_fake_llm), so quiz generation / ask
@@ -20,11 +20,11 @@ STUDENT = {
 
 @pytest.fixture(scope="module")
 def api():
-    os.environ.setdefault("GEMINI_API_KEY", "test-dummy-key")
-    os.environ.setdefault("GOOGLE_API_KEY", "test-dummy-key")
+    os.environ.setdefault("MISTRAL_API_KEY_1", "test-dummy-key")
+    os.environ.setdefault("GROQ_API_KEY_1", "test-dummy-key")
     os.environ.setdefault("ENVIRONMENT", "test")
     import serve
-    from dependencies import get_current_user
+    from adaptive.dependencies import get_current_user
     from mongomock_motor import AsyncMongoMockClient
 
     mockdb = AsyncMongoMockClient()["t"]
@@ -79,7 +79,7 @@ class TestSocialRoutes:
 
 
 class TestChatLifecycle:
-    """Create a saved chat, read it, re-save, delete — all via the API."""
+    """Create a saved chat, read it, re-save, delete â€” all via the API."""
 
     def test_chat_lifecycle(self, api):
         r = api.post("/me/chats", json={"title": "c1"})

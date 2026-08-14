@@ -44,3 +44,8 @@ CERTIFICATES_ENABLED = _env_bool("CERTIFICATES_ENABLED", CERTIFICATES_ENABLED)
 DKT_ENABLED = _env_bool("DKT_ENABLED", DKT_ENABLED)
 VOICE_ENABLED = _env_bool("VOICE_ENABLED", VOICE_ENABLED)
 LEADERBOARD_ENABLED = _env_bool("LEADERBOARD_ENABLED", LEADERBOARD_ENABLED)
+
+# Online RL training is OFF in production: models are trained locally and the
+# trained checkpoint is shipped with the deploy. DQN still SERVES from the
+# checkpoint; it just never updates its weights from live traffic.
+RL_ONLINE_LEARNING = _env_bool("RL_ONLINE_LEARNING", RL_ENABLED)

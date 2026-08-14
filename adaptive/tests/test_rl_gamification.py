@@ -13,9 +13,9 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from core import reward as reward_mod
-from core import gamification as gam
-from core import daily_quests as dq
+from adaptive.core import reward as reward_mod
+from adaptive.core import gamification as gam
+from adaptive.core import daily_quests as dq
 
 NOW = datetime(2026, 1, 15, 12, 0, 0, tzinfo=timezone.utc)  # noon → past grace cutoff
 
@@ -99,7 +99,7 @@ class TestDQNServingGate:
         fake.check_dqn_beats_baselines = impl
         monkeypatch.setitem(sys.modules, "training", types.ModuleType("training"))
         monkeypatch.setitem(sys.modules, "training.eval_policies", fake)
-        from api.inference import ProductionTutor
+        from adaptive.api.inference import ProductionTutor
         # _check_dqn_gate doesn't touch instance state — call it unbound.
         return ProductionTutor._check_dqn_gate(object())
 

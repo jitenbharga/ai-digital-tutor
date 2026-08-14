@@ -9,9 +9,12 @@ def hash_password(password: str) -> str:
 
 def verify_password(plain: str, hashed: str) -> bool:
     try:
-        return ph.verify(hashed, plain)
+        return ph.verify(plain, hashed)
     except Exception:
-        return False
+        try:
+            return ph.verify(hashed, plain)
+        except Exception:
+            return False
 
 
 def create_access_token(data: dict, expires_delta_minutes: int = 15) -> str:

@@ -1,5 +1,5 @@
-"""
-T1.1 — api/extras.py route coverage (memory, daily-session, materials,
+﻿"""
+T1.1 â€” api/extras.py route coverage (memory, daily-session, materials,
 flashcards, notifications, feynman, guardian/admin guards).
 
 Uses the shared mongomock + fake-LLM harness. Covers reads, mutations, the
@@ -20,11 +20,11 @@ STUDENT = {
 
 @pytest.fixture(scope="module")
 def api():
-    os.environ.setdefault("GEMINI_API_KEY", "test-dummy-key")
-    os.environ.setdefault("GOOGLE_API_KEY", "test-dummy-key")
+    os.environ.setdefault("MISTRAL_API_KEY_1", "test-dummy-key")
+    os.environ.setdefault("GROQ_API_KEY_1", "test-dummy-key")
     os.environ.setdefault("ENVIRONMENT", "test")
     import serve
-    from dependencies import get_current_user
+    from adaptive.dependencies import get_current_user
     from mongomock_motor import AsyncMongoMockClient
 
     mockdb = AsyncMongoMockClient()["t"]
@@ -122,7 +122,7 @@ class TestExtrasPostBodies:
         assert api.post("/me/mock-test", json={"subject": "math", "num_questions": 3}).status_code == 200
 
     def test_recap_missing_topic_is_400(self, api):
-        # Handler validates the body — empty topic is a clean 400, not a 5xx.
+        # Handler validates the body â€” empty topic is a clean 400, not a 5xx.
         assert api.post("/me/recap", json={}).status_code == 400
 
 

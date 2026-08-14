@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, field_validator
 from typing import Optional
 from datetime import date
 
@@ -9,6 +9,11 @@ class UserIn(BaseModel):
     password: str
     account_type: str = "student"
     date_of_birth: Optional[date] = None
+
+    @field_validator("date_of_birth", mode="before")
+    @classmethod
+    def _empty_dob_to_none(cls, v):
+        return v if v not in ("", None) else None
 
 
 class Token(BaseModel):

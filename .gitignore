@@ -39,11 +39,14 @@ env.*.yaml
 *.onnx
 *.h5
 *.pkl
-# Ignore checkpoint junk but KEEP the shipped, production DQN model (baked into
-# the Docker image; the DQN gate loads it at boot).
+# Ignore checkpoint junk but KEEP the shipped, production models (baked into
+# the Docker image; the DQN gate loads them at boot). Training runs locally —
+# commit the freshly trained files so Render picks them up.
 checkpoints/*
 !checkpoints/dqn_model.pt
 !checkpoints/dqn_model_best.pt
+!checkpoints/dkt_model.pt
+!checkpoints/dkt_model_best.pt
 
 # Datasets & DB dumps (prevents uploading massive/sensitive data files)
 *.csv

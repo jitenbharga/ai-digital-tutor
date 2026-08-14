@@ -36,10 +36,7 @@ async def gamification_legacy(student_id: str, current_user: dict = Depends(requ
         {"student_id": student_id}, {"_id": 0}
     )
     if not state:
-        return GamificationResponse(
-            xp=0, level=1, xp_in_level=0, xp_for_next_level=100,
-            streak=StreakInfo(), daily_goal=DailyGoal(), badges=[], new_badges=[],
-        )
+        raise HTTPException(404, "No gamification state found for student")
 
     result = get_gamification(state)
 
@@ -64,10 +61,7 @@ async def get_my_gamification(current_user: dict = Depends(get_current_user)):
         {"student_id": student_id}, {"_id": 0}
     )
     if not state:
-        return GamificationResponse(
-            xp=0, level=1, xp_in_level=0, xp_for_next_level=100,
-            streak=StreakInfo(), daily_goal=DailyGoal(), badges=[], new_badges=[],
-        )
+        raise HTTPException(404, "No gamification state found for student")
 
     result = get_gamification(state)
 

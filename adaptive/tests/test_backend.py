@@ -34,7 +34,7 @@ import pytest
 class TestStateVector:
 
     def test_output_length(self):
-        from utils.state_vector import build_state_vector
+        from adaptive.utils.state_vector import build_state_vector
         vec = build_state_vector(
             knowledge=0.5, learning_velocity=0.01, confidence=0.6,
             concept_mastery=0.4, engagement=0.7, speed=0.5,
@@ -46,7 +46,7 @@ class TestStateVector:
         assert len(vec) == 16
 
     def test_all_dims_bounded(self):
-        from utils.state_vector import build_state_vector
+        from adaptive.utils.state_vector import build_state_vector
         for _ in range(200):
             vec = build_state_vector(
                 knowledge=random.uniform(-1, 2),
@@ -70,7 +70,7 @@ class TestStateVector:
                 assert 0.0 <= v <= 1.0, f"dim {i} = {v} out of bounds"
 
     def test_zeros(self):
-        from utils.state_vector import build_state_vector
+        from adaptive.utils.state_vector import build_state_vector
         vec = build_state_vector(
             knowledge=0, learning_velocity=0, confidence=0,
             concept_mastery=0, engagement=0, speed=0,
@@ -82,7 +82,7 @@ class TestStateVector:
         assert all(v == 0.0 for v in vec)
 
     def test_max_values(self):
-        from utils.state_vector import build_state_vector
+        from adaptive.utils.state_vector import build_state_vector
         vec = build_state_vector(
             knowledge=1, learning_velocity=0.05, confidence=1,
             concept_mastery=1, engagement=1, speed=1,
@@ -94,7 +94,7 @@ class TestStateVector:
         assert all(v == 1.0 for v in vec)
 
     def test_deterministic(self):
-        from utils.state_vector import build_state_vector
+        from adaptive.utils.state_vector import build_state_vector
         kwargs = dict(
             knowledge=0.7, learning_velocity=0.02, confidence=0.5,
             concept_mastery=0.6, engagement=0.8, speed=0.4,
@@ -111,19 +111,19 @@ class TestStateVector:
 class TestReward:
 
     def test_smooth_clip_bounds(self):
-        from core.reward import smooth_clip
+        from adaptive.core.reward import smooth_clip
         assert 0.0 <= smooth_clip(-10) <= 1.0
         assert 0.0 <= smooth_clip(10) <= 1.0
         assert 0.0 <= smooth_clip(0.5) <= 1.0
 
     def test_smooth_clip_monotonic(self):
-        from core.reward import smooth_clip
+        from adaptive.core.reward import smooth_clip
         vals = [smooth_clip(x / 10) for x in range(-20, 30)]
         for i in range(1, len(vals)):
             assert vals[i] >= vals[i - 1]
 
     def test_update_student_traits_correct_answer(self):
-        from core.reward import update_student_traits
+        from adaptive.core.reward import update_student_traits
         traits = {
             "learning_velocity": 0.01, "confidence": 0.5, "engagement": 0.5,
             "frustration": 0.3, "streak": 2, "fatigue": 0.2,
@@ -142,7 +142,7 @@ class TestReward:
         assert traits["frustration"] < 0.3
 
     def test_update_student_traits_wrong_answer(self):
-        from core.reward import update_student_traits
+        from adaptive.core.reward import update_student_traits
         traits = {
             "learning_velocity": 0.01, "confidence": 0.5, "engagement": 0.5,
             "frustration": 0.3, "streak": 5, "fatigue": 0.2,
@@ -159,7 +159,7 @@ class TestReward:
         assert traits["frustration"] > 0.3
 
     def test_all_traits_bounded_after_update(self):
-        from core.reward import update_student_traits
+        from adaptive.core.reward import update_student_traits
         for _ in range(100):
             traits = {k: random.uniform(0, 1) for k in [
                 "learning_velocity", "confidence", "engagement", "frustration",
@@ -182,14 +182,14 @@ class TestReward:
             assert 0.0 <= concept["concept_mastery"] <= 1.0
 
     def test_compute_reward_returns_float(self):
-        from core.reward import compute_reward
+        from adaptive.core.reward import compute_reward
         traits = {"engagement": 0.6, "streak": 3, "frustration": 0.2}
         concept = {"knowledge": 0.5}
         r = compute_reward(traits, concept, True, 3.0, 0, 0.4, 0, 0.4, 0.5)
         assert isinstance(r, float)
 
     def test_reward_higher_for_correct(self):
-        from core.reward import compute_reward
+        from adaptive.core.reward import compute_reward
         traits = {"engagement": 0.6, "streak": 3, "frustration": 0.2}
         concept = {"knowledge": 0.6}
         r_correct = compute_reward(traits, concept, True, 3.0, 0, 0.4, 0, 0.4, 0.5)
@@ -200,29 +200,29 @@ class TestReward:
 class TestTone:
 
     def test_high_frustration(self):
-        from utils.tone import get_tone_directive
+        from adaptive.utils.tone import get_tone_directive
         student = MagicMock(frustration=0.8, confidence=0.5, engagement=0.5, fatigue=0.3, curiosity=0.4)
         assert "warm" in get_tone_directive(student).lower() or "patient" in get_tone_directive(student).lower()
 
     def test_high_confidence_engagement(self):
-        from utils.tone import get_tone_directive
+        from adaptive.utils.tone import get_tone_directive
         student = MagicMock(frustration=0.2, confidence=0.9, engagement=0.8, fatigue=0.3, curiosity=0.4)
         assert "challeng" in get_tone_directive(student).lower()
 
     def test_high_fatigue(self):
-        from utils.tone import get_tone_directive
+        from adaptive.utils.tone import get_tone_directive
         student = MagicMock(frustration=0.2, confidence=0.5, engagement=0.5, fatigue=0.7, curiosity=0.4)
         tone = get_tone_directive(student)
         assert "brief" in tone.lower() or "energetic" in tone.lower()
 
     def test_high_curiosity(self):
-        from utils.tone import get_tone_directive
+        from adaptive.utils.tone import get_tone_directive
         student = MagicMock(frustration=0.2, confidence=0.5, engagement=0.5, fatigue=0.3, curiosity=0.8)
         tone = get_tone_directive(student)
         assert "curiosity" in tone.lower() or "deeper" in tone.lower()
 
     def test_default_tone(self):
-        from utils.tone import get_tone_directive
+        from adaptive.utils.tone import get_tone_directive
         student = MagicMock(frustration=0.3, confidence=0.5, engagement=0.5, fatigue=0.3, curiosity=0.4)
         assert "TONE:" in get_tone_directive(student)
 
@@ -230,34 +230,34 @@ class TestTone:
 class TestParseJsonRobust:
 
     def test_clean_json(self):
-        from core.llm_utils import parse_json_robust
+        from adaptive.core.llm_utils import parse_json_robust
         assert parse_json_robust('{"key": "value", "num": 42}') == {"key": "value", "num": 42}
 
     def test_markdown_fenced(self):
-        from core.llm_utils import parse_json_robust
+        from adaptive.core.llm_utils import parse_json_robust
         assert parse_json_robust('```json\n{"key": "value"}\n```') == {"key": "value"}
 
     def test_prose_wrapped(self):
-        from core.llm_utils import parse_json_robust
+        from adaptive.core.llm_utils import parse_json_robust
         text = 'Here is the answer:\n{"question": "What is 2+2?"}\nHope that helps!'
         assert parse_json_robust(text)["question"] == "What is 2+2?"
 
     def test_trailing_comma(self):
-        from core.llm_utils import parse_json_robust
+        from adaptive.core.llm_utils import parse_json_robust
         assert parse_json_robust('{"a": 1, "b": 2,}') == {"a": 1, "b": 2}
 
     def test_single_quotes(self):
-        from core.llm_utils import parse_json_robust
+        from adaptive.core.llm_utils import parse_json_robust
         assert parse_json_robust("{'key': 'value'}") == {"key": "value"}
 
     def test_none_on_garbage(self):
-        from core.llm_utils import parse_json_robust
+        from adaptive.core.llm_utils import parse_json_robust
         assert parse_json_robust("not json at all") is None
         assert parse_json_robust("") is None
         assert parse_json_robust(None) is None
 
     def test_nested_json(self):
-        from core.llm_utils import parse_json_robust
+        from adaptive.core.llm_utils import parse_json_robust
         text = '{"outer": {"inner": [1, 2, 3]}}'
         assert parse_json_robust(text)["outer"]["inner"] == [1, 2, 3]
 
@@ -269,24 +269,24 @@ class TestParseJsonRobust:
 class TestLLMCache:
 
     def test_put_and_get(self):
-        from core.llm_cache import LLMCache
+        from adaptive.core.llm_cache import LLMCache
         cache = LLMCache(max_size=10, ttl_seconds=60)
         cache.put("k1", {"data": "hello"})
         assert cache.get("k1") == {"data": "hello"}
 
     def test_miss(self):
-        from core.llm_cache import LLMCache
+        from adaptive.core.llm_cache import LLMCache
         assert LLMCache().get("nonexistent") is None
 
     def test_ttl_expiry(self):
-        from core.llm_cache import LLMCache
+        from adaptive.core.llm_cache import LLMCache
         cache = LLMCache(max_size=10, ttl_seconds=0)
         cache.put("k1", "val")
         time.sleep(0.01)
         assert cache.get("k1") is None
 
     def test_lru_eviction(self):
-        from core.llm_cache import LLMCache
+        from adaptive.core.llm_cache import LLMCache
         cache = LLMCache(max_size=3, ttl_seconds=60)
         cache.put("a", 1); cache.put("b", 2); cache.put("c", 3)
         cache.put("d", 4)  # evicts "a"
@@ -294,7 +294,7 @@ class TestLLMCache:
         assert cache.get("b") == 2
 
     def test_lru_access_refreshes(self):
-        from core.llm_cache import LLMCache
+        from adaptive.core.llm_cache import LLMCache
         cache = LLMCache(max_size=3, ttl_seconds=60)
         cache.put("a", 1); cache.put("b", 2); cache.put("c", 3)
         cache.get("a")  # refresh "a"
@@ -303,7 +303,7 @@ class TestLLMCache:
         assert cache.get("b") is None
 
     def test_stats(self):
-        from core.llm_cache import LLMCache
+        from adaptive.core.llm_cache import LLMCache
         cache = LLMCache(max_size=10, ttl_seconds=60)
         cache.put("k1", "v1")
         cache.get("k1"); cache.get("k2")
@@ -312,7 +312,7 @@ class TestLLMCache:
         assert s["hit_rate"] == 0.5 and s["size"] == 1
 
     def test_overwrite_existing_key(self):
-        from core.llm_cache import LLMCache
+        from adaptive.core.llm_cache import LLMCache
         cache = LLMCache(max_size=10, ttl_seconds=60)
         cache.put("k1", "old"); cache.put("k1", "new")
         assert cache.get("k1") == "new"
@@ -321,53 +321,53 @@ class TestLLMCache:
 class TestBuildCacheKey:
 
     def test_deterministic(self):
-        from core.llm_cache import build_cache_key
+        from adaptive.core.llm_cache import build_cache_key
         k1 = build_cache_key("explainer", "algebra", difficulty="medium", prompt_version="v1")
         k2 = build_cache_key("explainer", "algebra", difficulty="medium", prompt_version="v1")
         assert k1 == k2
 
     def test_different_inputs_differ(self):
-        from core.llm_cache import build_cache_key
+        from adaptive.core.llm_cache import build_cache_key
         assert build_cache_key("explainer", "algebra") != build_cache_key("explainer", "calculus")
 
     def test_version_affects_key(self):
-        from core.llm_cache import build_cache_key
+        from adaptive.core.llm_cache import build_cache_key
         assert build_cache_key("e", "t", prompt_version="v1") != build_cache_key("e", "t", prompt_version="v2")
 
     def test_profile_bucketing(self):
-        from core.llm_cache import build_cache_key
+        from adaptive.core.llm_cache import build_cache_key
         k1 = build_cache_key("e", "t", profile_bucket={"knowledge": 0.51})
         k2 = build_cache_key("e", "t", profile_bucket={"knowledge": 0.53})
         assert k1 == k2  # both bucket to 0.5
 
     def test_profile_different_bucket(self):
-        from core.llm_cache import build_cache_key
+        from adaptive.core.llm_cache import build_cache_key
         k1 = build_cache_key("e", "t", profile_bucket={"knowledge": 0.44})
         k2 = build_cache_key("e", "t", profile_bucket={"knowledge": 0.56})
         assert k1 != k2
 
     def test_is_sha256(self):
-        from core.llm_cache import build_cache_key
+        from adaptive.core.llm_cache import build_cache_key
         k = build_cache_key("test", "topic")
         assert len(k) == 64
         int(k, 16)  # valid hex
 
     def test_case_insensitive_topic(self):
-        from core.llm_cache import build_cache_key
+        from adaptive.core.llm_cache import build_cache_key
         assert build_cache_key("e", "Algebra") == build_cache_key("e", "algebra")
 
 
 class TestLLMTelemetry:
 
     def test_start_creates_record(self):
-        from core.llm_telemetry import LLMTelemetry
+        from adaptive.core.llm_telemetry import LLMTelemetry
         rec = LLMTelemetry().start("explainer", "Mistral-Large", "v1")
         assert rec["engine"] == "explainer"
         assert rec["model"] == "Mistral-Large"
         assert rec["ok"] is False and rec["start_ts"] > 0
 
     def test_finish_sets_latency(self):
-        from core.llm_telemetry import LLMTelemetry
+        from adaptive.core.llm_telemetry import LLMTelemetry
         t = LLMTelemetry()
         rec = t.start("test", "model1")
         time.sleep(0.01)
@@ -376,19 +376,19 @@ class TestLLMTelemetry:
         assert rec["tokens_in"] == 100 and rec["tokens_out"] == 200
 
     def test_finish_error(self):
-        from core.llm_telemetry import LLMTelemetry
+        from adaptive.core.llm_telemetry import LLMTelemetry
         t = LLMTelemetry()
         rec = t.start("test", "model1")
         t.finish(rec, ok=False, error="timeout")
         assert rec["ok"] is False and rec["error"] == "timeout"
 
     def test_summary_empty(self):
-        from core.llm_telemetry import LLMTelemetry
+        from adaptive.core.llm_telemetry import LLMTelemetry
         s = LLMTelemetry().summary()
         assert s["per_model"] == {} and s["per_engine"] == {}
 
     def test_summary_with_records(self):
-        from core.llm_telemetry import LLMTelemetry
+        from adaptive.core.llm_telemetry import LLMTelemetry
         t = LLMTelemetry()
         for i in range(5):
             rec = t.start("explainer", "ModelA")
@@ -399,7 +399,7 @@ class TestLLMTelemetry:
         assert stats["total_tokens_in"] == 500
 
     def test_buffer_stores_records(self):
-        from core.llm_telemetry import LLMTelemetry
+        from adaptive.core.llm_telemetry import LLMTelemetry
         t = LLMTelemetry()
         rec = t.start("test", "m1")
         t.finish(rec, ok=True)
@@ -425,54 +425,54 @@ class TestPromptTemplates:
         assert hasattr(mod, "VERSION") and isinstance(mod.VERSION, str) and len(mod.VERSION) > 0
 
     def test_question_generator_build(self):
-        from core.prompts import question_generator as p
+        from adaptive.core.prompts import question_generator as p
         assert len(p.build("algebra", "medium", 0.3, 0.5, {"core_concept": "eq"}, "Be kind")) > 20
 
     def test_explainer_build(self):
-        from core.prompts import explainer as p
+        from adaptive.core.prompts import explainer as p
         assert len(p.build("algebra", {"knowledge": 0.5}, "Be clear", "verbal")) > 20
 
     def test_answer_evaluator_build(self):
-        from core.prompts import answer_evaluator as p
+        from adaptive.core.prompts import answer_evaluator as p
         assert len(p.build("What is 2+2?", "4", "4", "arithmetic", 0.5)) > 20
 
     def test_socratic_build_probe(self):
-        from core.prompts import socratic as p
+        from adaptive.core.prompts import socratic as p
         assert len(p.build_probe("algebra", "equations", 0.5, 0.3, 0.6, "No prior", "Be kind")) > 20
 
     def test_socratic_build_reveal_step(self):
-        from core.prompts import socratic as p
+        from adaptive.core.prompts import socratic as p
         assert len(p.build_reveal_step("algebra", "equations", 0.5, "medium", "Be kind")) > 20
 
     def test_socratic_build_challenge(self):
-        from core.prompts import socratic as p
+        from adaptive.core.prompts import socratic as p
         assert len(p.build_challenge("algebra", "equations", 0.7, "hard", "Push them")) > 20
 
     def test_hint_build(self):
-        from core.prompts import hint as p
+        from adaptive.core.prompts import hint as p
         assert len(p.build("What is the derivative of x^2?", "Be supportive")) > 20
 
     def test_review_build(self):
-        from core.prompts import review as p
+        from adaptive.core.prompts import review as p
         assert len(p.build("algebra", 3.0, 0.6, 0.4, "Be encouraging")) > 20
 
     def test_study_planner_build(self):
-        from core.prompts import study_planner as p
+        from adaptive.core.prompts import study_planner as p
         profile = {"fatigue": 0.3, "frustration": 0.1, "streak": 5,
                     "engagement_trend": "improving", "day": "Monday",
                     "avg_session_minutes": 15.0}
         assert len(p.build("algebra (0.3)", "calculus (0.9)", profile, 30, "Go")) > 20
 
     def test_progressive_challenge_build(self):
-        from core.prompts import progressive_challenge as p
+        from adaptive.core.prompts import progressive_challenge as p
         assert len(p.build("algebra", 0.7, "medium", "Push them")) > 20
 
     def test_knowledge_graph_build(self):
-        from core.prompts import knowledge_graph as p
+        from adaptive.core.prompts import knowledge_graph as p
         assert len(p.build([{"topic": "algebra", "mastery": 0.6}, {"topic": "calc", "mastery": 0.3}])) > 20
 
     def test_prerequisite_build(self):
-        from core.prompts import prerequisite as p
+        from adaptive.core.prompts import prerequisite as p
         assert len(p.build("calculus")) > 20
 
 
@@ -483,30 +483,30 @@ class TestPromptTemplates:
 class TestRLMetrics:
 
     def test_initial_state(self):
-        from utils.rl_metrics import RLMetrics
+        from adaptive.utils.rl_metrics import RLMetrics
         m = RLMetrics()
         assert m.total_decisions == 0 and m.mean_reward() == 0.0 and m.mean_loss() == 0.0
 
     def test_record_decision(self):
-        from utils.rl_metrics import RLMetrics
+        from adaptive.utils.rl_metrics import RLMetrics
         m = RLMetrics()
         m.record_decision(mode=1, hint=0, difficulty=0.4, epsilon=0.5)
         assert m.total_decisions == 1 and m.mode_counts[1] == 1
 
     def test_record_reward(self):
-        from utils.rl_metrics import RLMetrics
+        from adaptive.utils.rl_metrics import RLMetrics
         m = RLMetrics()
         m.record_reward(1.5); m.record_reward(2.5)
         assert m.total_learns == 2 and m.mean_reward() == 2.0
 
     def test_record_loss(self):
-        from utils.rl_metrics import RLMetrics
+        from adaptive.utils.rl_metrics import RLMetrics
         m = RLMetrics()
         m.record_loss(0.5); m.record_loss(1.5)
         assert m.total_train_steps == 2 and m.mean_loss() == 1.0
 
     def test_action_distribution(self):
-        from utils.rl_metrics import RLMetrics
+        from adaptive.utils.rl_metrics import RLMetrics
         m = RLMetrics()
         for _ in range(10): m.record_decision(0, 0, 0.2, 0.5)
         for _ in range(10): m.record_decision(1, 1, 0.4, 0.5)
@@ -514,7 +514,7 @@ class TestRLMetrics:
         assert dist["mode"]["direct_question"] == 0.5
 
     def test_snapshot(self):
-        from utils.rl_metrics import RLMetrics
+        from adaptive.utils.rl_metrics import RLMetrics
         m = RLMetrics()
         m.record_decision(0, 0, 0.2, 0.5); m.record_reward(1.0)
         snap = m.snapshot(epsilon=0.5, step_counter=10)
@@ -530,7 +530,7 @@ class TestEnginesWithMockedLLM:
 
     @pytest.fixture(autouse=True)
     def mock_build_models(self):
-        with patch("core.llm_registry.build_models", return_value=[("mock_model", MagicMock())]):
+        with patch("adaptive.core.llm_registry.build_models", return_value=[("mock_model", MagicMock())]):
             yield
 
     @pytest.mark.asyncio
@@ -538,9 +538,9 @@ class TestEnginesWithMockedLLM:
         mock_data = {"question": "What is x+2=5?", "answer": "x=3",
                      "explanation": "Subtract 2", "model_used": "mock"}
         mock_verification = {"verified": True, "method": "mock"}
-        with patch("core.llm_utils.call_llm", new_callable=AsyncMock, return_value=mock_data), \
-             patch("core.question_generator.AnswerVerifier.verify", new_callable=AsyncMock, return_value=mock_verification):
-            from core.question_generator import QuestionGenerator
+        with patch("adaptive.core.llm_utils.call_llm", new_callable=AsyncMock, return_value=mock_data), \
+             patch("adaptive.core.question_generator.AnswerVerifier.verify", new_callable=AsyncMock, return_value=mock_verification):
+            from adaptive.core.question_generator import QuestionGenerator
             result = await QuestionGenerator().generate_question(
                 topic="algebra", difficulty="easy", frustration=0.2,
                 knowledge=0.5, explanation={"core_concept": "equations"}
@@ -549,7 +549,7 @@ class TestEnginesWithMockedLLM:
 
     @pytest.mark.asyncio
     async def test_question_generator_fallback(self):
-        import core.question_generator as _mod
+        import adaptive.core.question_generator as _mod
         with patch.object(_mod, "call_llm", new_callable=AsyncMock, return_value=None):
             result = await _mod.QuestionGenerator().generate_question(
                 topic="algebra", difficulty="easy", frustration=0.2,
@@ -563,8 +563,8 @@ class TestEnginesWithMockedLLM:
                      "error_type": "none", "misconception": None,
                      "root_concept": None, "targeted_feedback": "Well done",
                      "remediation": "", "mistakes": [], "improvement": "", "model_used": "mock"}
-        with patch("core.llm_utils.call_llm", new_callable=AsyncMock, return_value=mock_data):
-            from core.answer_evaluator import LLMAnswerEvaluator
+        with patch("adaptive.core.llm_utils.call_llm", new_callable=AsyncMock, return_value=mock_data):
+            from adaptive.core.answer_evaluator import LLMAnswerEvaluator
             result = await LLMAnswerEvaluator().evaluate(
                 question="What is 2+2?", student_answer="4",
                 correct_answer="4", start_time=100.0, end_time=105.0
@@ -574,7 +574,7 @@ class TestEnginesWithMockedLLM:
 
     @pytest.mark.asyncio
     async def test_answer_evaluator_fallback(self):
-        import core.answer_evaluator as _mod
+        import adaptive.core.answer_evaluator as _mod
         with patch.object(_mod, "call_llm", new_callable=AsyncMock, return_value=None):
             result = await _mod.LLMAnswerEvaluator().evaluate(
                 question="Q", student_answer="A",
@@ -588,8 +588,8 @@ class TestEnginesWithMockedLLM:
                      "intuition": "Think of x as a box", "prerequisites": [],
                      "step_by_step": [], "practice": [], "next_topics": [],
                      "references": [], "model_used": "mock"}
-        with patch("core.llm_utils.call_llm", new_callable=AsyncMock, return_value=mock_data):
-            from core.adaptive_explainer import AdaptiveExplainer
+        with patch("adaptive.core.llm_utils.call_llm", new_callable=AsyncMock, return_value=mock_data):
+            from adaptive.core.adaptive_explainer import AdaptiveExplainer
             result = await AdaptiveExplainer().generate_explanation(
                 topic="algebra", student_profile={"knowledge": 0.5}
             )
@@ -597,7 +597,7 @@ class TestEnginesWithMockedLLM:
 
     @pytest.mark.asyncio
     async def test_adaptive_explainer_style_selection(self):
-        from core.adaptive_explainer import AdaptiveExplainer
+        from adaptive.core.adaptive_explainer import AdaptiveExplainer
         ae = AdaptiveExplainer()
         assert ae.select_style({"frustration": 0.8}) == "example_first"
         assert ae.select_style({"knowledge": 0.2}) == "example_first"
@@ -607,13 +607,13 @@ class TestEnginesWithMockedLLM:
 
     @pytest.mark.asyncio
     async def test_hint_engine_success(self):
-        with patch("core.llm_utils.call_llm_text", new_callable=AsyncMock, return_value="Try breaking the problem into parts"):
-            from core.hint_engine import HintGenerator
+        with patch("adaptive.core.llm_utils.call_llm_text", new_callable=AsyncMock, return_value="Try breaking the problem into parts"):
+            from adaptive.core.hint_engine import HintGenerator
             assert "breaking" in (await HintGenerator().generate_hint("What is 2+2?")).lower()
 
     @pytest.mark.asyncio
     async def test_hint_engine_fallback(self):
-        import core.hint_engine as _mod
+        import adaptive.core.hint_engine as _mod
         with patch.object(_mod, "call_llm_text", new_callable=AsyncMock, return_value=None):
             assert "step by step" in (await _mod.HintGenerator().generate_hint("What is 2+2?")).lower()
 
@@ -621,8 +621,8 @@ class TestEnginesWithMockedLLM:
     async def test_socratic_probe_success(self):
         mock_data = {"probe": "Why do you think that works?", "expected_insight": "Causality",
                      "follow_up_if_stuck": "Simplify", "thinking_direction": "Cause/effect", "model_used": "mock"}
-        with patch("core.llm_utils.call_llm", new_callable=AsyncMock, return_value=mock_data):
-            from core.socratic_engine import SocraticEngine
+        with patch("adaptive.core.llm_utils.call_llm", new_callable=AsyncMock, return_value=mock_data):
+            from adaptive.core.socratic_engine import SocraticEngine
             result = await SocraticEngine().generate_socratic_probe(
                 topic="physics", core_concept="Newton's laws",
                 knowledge_level=0.5, frustration=0.2, curiosity=0.7,
@@ -635,8 +635,8 @@ class TestEnginesWithMockedLLM:
         mock_data = {"problem_context": "Solving F=ma", "step_1_revealed": "Identify forces",
                      "step_2_question": "What is the net force?", "step_2_answer": "10N",
                      "checkpoint_hint": "Check units", "full_solution": "Complete", "model_used": "mock"}
-        with patch("core.llm_utils.call_llm", new_callable=AsyncMock, return_value=mock_data):
-            from core.socratic_engine import SocraticEngine
+        with patch("adaptive.core.llm_utils.call_llm", new_callable=AsyncMock, return_value=mock_data):
+            from adaptive.core.socratic_engine import SocraticEngine
             result = await SocraticEngine().generate_reveal_step(
                 topic="physics", core_concept="Newton's laws",
                 knowledge_level=0.5, difficulty="medium", conversation_context=[]
@@ -648,8 +648,8 @@ class TestEnginesWithMockedLLM:
         mock_data = {"challenge_question": "What if mass is zero?", "why_its_tricky": "Div by zero",
                      "common_trap": "Assuming mass positive", "correct_answer": "Breaks down",
                      "deep_insight": "Massless particles", "explanation": "Detail", "model_used": "mock"}
-        with patch("core.llm_utils.call_llm", new_callable=AsyncMock, return_value=mock_data):
-            from core.socratic_engine import SocraticEngine
+        with patch("adaptive.core.llm_utils.call_llm", new_callable=AsyncMock, return_value=mock_data):
+            from adaptive.core.socratic_engine import SocraticEngine
             result = await SocraticEngine().generate_challenge(
                 topic="physics", core_concept="Newton's laws",
                 knowledge_level=0.8, mastery=0.7, difficulty="hard",
@@ -661,8 +661,8 @@ class TestEnginesWithMockedLLM:
     async def test_review_engine_generate(self):
         mock_data = {"question": "Explain algebra basics", "answer": "Unknowns",
                      "refresher": "Remember: x", "tests_concept": "Basic algebra", "model_used": "mock"}
-        with patch("core.llm_utils.call_llm", new_callable=AsyncMock, return_value=mock_data):
-            from core.review_engine import ReviewEngine
+        with patch("adaptive.core.llm_utils.call_llm", new_callable=AsyncMock, return_value=mock_data):
+            from adaptive.core.review_engine import ReviewEngine
             result = await ReviewEngine().generate_review_question(
                 topic="algebra", days_ago=3.0, mastery=0.6, retention_estimate=0.4
             )
@@ -674,8 +674,8 @@ class TestEnginesWithMockedLLM:
             {"step": 1, "sub_problem": "Find x", "checkpoint_answer": "3",
              "hint_if_stuck": "Isolate x", "concept_tested": "algebra"}
         ], "final_answer": "x=3", "learning_arc": "Basics to app", "model_used": "mock"}
-        with patch("core.llm_utils.call_llm", new_callable=AsyncMock, return_value=mock_data):
-            from core.progressive_challenge import ProgressiveChallengeEngine
+        with patch("adaptive.core.llm_utils.call_llm", new_callable=AsyncMock, return_value=mock_data):
+            from adaptive.core.progressive_challenge import ProgressiveChallengeEngine
             result = await ProgressiveChallengeEngine().generate_challenge(topic="algebra", mastery=0.6)
             assert result["topic"] == "algebra" and len(result["steps"]) == 1
 
@@ -684,8 +684,8 @@ class TestEnginesWithMockedLLM:
         mock_data = {"nodes": [{"topic": "algebra", "mastery": 0.6}],
                      "edges": [{"from": "a", "to": "b", "strength": "strong", "reason": "prereq"}],
                      "weak_links": ["calculus"], "suggested_focus": "Focus on calculus", "model_used": "mock"}
-        with patch("core.llm_utils.call_llm", new_callable=AsyncMock, return_value=mock_data):
-            from core.knowledge_graph import KnowledgeGraphEngine
+        with patch("adaptive.core.llm_utils.call_llm", new_callable=AsyncMock, return_value=mock_data):
+            from adaptive.core.knowledge_graph import KnowledgeGraphEngine
             result = await KnowledgeGraphEngine().generate_graph([
                 {"topic": "algebra", "mastery": 0.6}, {"topic": "calculus", "mastery": 0.3}
             ])
@@ -693,28 +693,28 @@ class TestEnginesWithMockedLLM:
 
     @pytest.mark.asyncio
     async def test_knowledge_graph_single_topic(self):
-        from core.knowledge_graph import KnowledgeGraphEngine
+        from adaptive.core.knowledge_graph import KnowledgeGraphEngine
         result = await KnowledgeGraphEngine().generate_graph([{"topic": "algebra", "mastery": 0.6}])
         assert result["model_used"] == "skip" and result["edges"] == []
 
     @pytest.mark.asyncio
     async def test_prerequisite_engine_success(self):
         mock_data = {"prerequisites": ["Algebra", "Trigonometry", "Limits"], "model_used": "mock"}
-        with patch("core.llm_utils.call_llm", new_callable=AsyncMock, return_value=mock_data):
-            from core.prerequisite_engine import PrerequisiteEngine
+        with patch("adaptive.core.llm_utils.call_llm", new_callable=AsyncMock, return_value=mock_data):
+            from adaptive.core.prerequisite_engine import PrerequisiteEngine
             result = await PrerequisiteEngine().get_prerequisites("calculus")
             assert "algebra" in result and len(result) <= 5
 
     @pytest.mark.asyncio
     async def test_prerequisite_engine_fallback(self):
-        import core.prerequisite_engine as _mod
+        import adaptive.core.prerequisite_engine as _mod
         with patch.object(_mod, "call_llm", new_callable=AsyncMock, return_value=None):
             assert await _mod.PrerequisiteEngine().get_prerequisites("calculus") == ["basics of calculus"]
 
     @pytest.mark.asyncio
     async def test_study_planner_fallback(self):
-        with patch("core.llm_utils.call_llm", new_callable=AsyncMock, return_value=None):
-            from core.study_planner import StudyPlanner
+        with patch("adaptive.core.llm_utils.call_llm", new_callable=AsyncMock, return_value=None):
+            from adaptive.core.study_planner import StudyPlanner
             student = MagicMock()
             student.concepts = {
                 "algebra": MagicMock(concept_mastery=0.3, knowledge=0.3),
@@ -733,57 +733,57 @@ class TestEnginesWithMockedLLM:
 class TestSchemas:
 
     def test_student_input_valid(self):
-        from api.schemas import StudentInput
+        from adaptive.api.schemas import StudentInput
         assert StudentInput(student_id="user_123", current_topic="algebra").student_id == "user_123"
 
     def test_student_input_rejects_injection(self):
-        from api.schemas import StudentInput
+        from adaptive.api.schemas import StudentInput
         with pytest.raises(Exception):
             StudentInput(student_id='{"$gt": ""}', current_topic="algebra")
 
     def test_student_input_rejects_long_id(self):
-        from api.schemas import StudentInput
+        from adaptive.api.schemas import StudentInput
         with pytest.raises(Exception):
             StudentInput(student_id="a" * 65, current_topic="algebra")
 
     def test_student_input_rejects_special_chars(self):
-        from api.schemas import StudentInput
+        from adaptive.api.schemas import StudentInput
         with pytest.raises(Exception):
             StudentInput(student_id="user@evil.com", current_topic="algebra")
 
     def test_student_input_allows_hyphens_underscores(self):
-        from api.schemas import StudentInput
+        from adaptive.api.schemas import StudentInput
         assert StudentInput(student_id="user-name_123").student_id == "user-name_123"
 
     def test_answer_request_valid(self):
-        from api.schemas import AnswerRequest
+        from adaptive.api.schemas import AnswerRequest
         assert AnswerRequest(student_id="user_1", answer="42").answer == "42"
 
     def test_answer_request_rejects_injection(self):
-        from api.schemas import AnswerRequest
+        from adaptive.api.schemas import AnswerRequest
         with pytest.raises(Exception):
             AnswerRequest(student_id='"; DROP TABLE students;--', answer="42")
 
     def test_hint_request_valid(self):
-        from api.schemas import HintRequest
+        from adaptive.api.schemas import HintRequest
         assert HintRequest(student_id="user_1", question="What is 2+2?").question == "What is 2+2?"
 
     def test_user_in_password_validation(self):
-        from api.schemas import UserIn
+        from adaptive.api.schemas import UserIn
         with pytest.raises(Exception):
             UserIn(username="test", password="short")
 
     def test_user_in_valid_password(self):
-        from api.schemas import UserIn
+        from adaptive.api.schemas import UserIn
         assert UserIn(username="test", password="longpassword123", email="test@example.com").password == "longpassword123"
 
     def test_tutor_response(self):
-        from api.schemas import TutorResponse
+        from adaptive.api.schemas import TutorResponse
         t = TutorResponse(mode="direct_question", hint_level=0, difficulty=0.4, question="What is x?")
         assert t.mode == "direct_question"
 
     def test_rl_stats_response(self):
-        from api.schemas import RLStatsResponse, ActionDistribution
+        from adaptive.api.schemas import RLStatsResponse, ActionDistribution
         r = RLStatsResponse(
             epsilon=0.5, step_counter=100, total_decisions=50, total_learns=40,
             total_train_steps=30, mean_reward=1.5, mean_loss=0.1,
@@ -793,7 +793,7 @@ class TestSchemas:
         assert r.epsilon == 0.5
 
     def test_progressive_challenge_response(self):
-        from api.schemas import ProgressiveChallengeResponse, ProgressiveChallengeStep
+        from adaptive.api.schemas import ProgressiveChallengeResponse, ProgressiveChallengeStep
         p = ProgressiveChallengeResponse(
             topic="algebra", difficulty="medium", problem_statement="Solve multi-step",
             steps=[ProgressiveChallengeStep(step=1, sub_problem="Find x",
@@ -803,7 +803,7 @@ class TestSchemas:
         assert len(p.steps) == 1
 
     def test_review_response(self):
-        from api.schemas import ReviewResponse, DueTopicItem
+        from adaptive.api.schemas import ReviewResponse, DueTopicItem
         r = ReviewResponse(
             due_topics=[DueTopicItem(topic="algebra", mastery=0.6,
                         retention_estimate=0.4, days_since_review=3.0, review_count=2)],
@@ -812,7 +812,7 @@ class TestSchemas:
         assert len(r.due_topics) == 1
 
     def test_study_plan_response(self):
-        from api.schemas import StudyPlanResponse, StudyPlanItem
+        from adaptive.api.schemas import StudyPlanResponse, StudyPlanItem
         r = StudyPlanResponse(
             plan=[StudyPlanItem(topic="algebra", duration_min=15, type="learn", reason="Weak")],
             motivational_note="Keep going!", estimated_knowledge_gain="Good progress"
@@ -827,7 +827,7 @@ class TestSchemas:
 class TestTokenExtraction:
 
     def test_usage_metadata_attr(self):
-        from core.llm_utils import _extract_tokens
+        from adaptive.core.llm_utils import _extract_tokens
         response = MagicMock()
         usage = MagicMock(); usage.input_tokens = 100; usage.output_tokens = 200
         response.usage_metadata = usage
@@ -835,7 +835,7 @@ class TestTokenExtraction:
         assert ti == 100 and to == 200
 
     def test_response_metadata_fallback(self):
-        from core.llm_utils import _extract_tokens
+        from adaptive.core.llm_utils import _extract_tokens
         response = MagicMock()
         response.usage_metadata = None
         response.response_metadata = {"token_usage": {"prompt_tokens": 50, "completion_tokens": 75}}
@@ -843,7 +843,7 @@ class TestTokenExtraction:
         assert ti == 50 and to == 75
 
     def test_no_metadata(self):
-        from core.llm_utils import _extract_tokens
+        from adaptive.core.llm_utils import _extract_tokens
         response = MagicMock()
         response.usage_metadata = None
         response.response_metadata = {}
@@ -854,7 +854,7 @@ class TestTokenExtraction:
 class TestReviewEngineRetention:
 
     def test_fresh_concept_full_retention(self):
-        from core.review_engine import ReviewEngine
+        from adaptive.core.review_engine import ReviewEngine
         from models.student import Concept
         concept = Concept(concept_mastery=0.8)
         # Review once so FSRS card exists
@@ -863,7 +863,7 @@ class TestReviewEngineRetention:
         assert ret > 0.9  # just reviewed -> high retention
 
     def test_no_fsrs_state_uses_mastery(self):
-        from core.review_engine import ReviewEngine
+        from adaptive.core.review_engine import ReviewEngine
         from models.student import Concept
         concept = Concept(concept_mastery=0.4)
         # No FSRS card yet -> falls back to concept_mastery
@@ -871,7 +871,7 @@ class TestReviewEngineRetention:
         assert abs(ret - 0.4) < 0.01
 
     def test_mark_reviewed_creates_fsrs(self):
-        from core.review_engine import ReviewEngine
+        from adaptive.core.review_engine import ReviewEngine
         from models.student import Concept
         concept = Concept(review_count=2)
         ReviewEngine.mark_reviewed(concept, correct=True, response_time=10.0)
@@ -886,7 +886,7 @@ class TestAnswerEvaluatorUxScore:
 
     def _call_ux_score(self, **kwargs):
         """Call _calculate_ux_score without instantiating the full evaluator."""
-        from core.answer_evaluator import LLMAnswerEvaluator
+        from adaptive.core.answer_evaluator import LLMAnswerEvaluator
         # Call as unbound — self arg is unused in the method
         return LLMAnswerEvaluator._calculate_ux_score(None, **kwargs)
 
@@ -913,7 +913,7 @@ class TestSingleRewardSource:
 
     def test_evaluator_does_not_produce_reward_key(self):
         """The evaluator dict must use 'ux_score', never 'reward'."""
-        from core.answer_evaluator import LLMAnswerEvaluator
+        from adaptive.core.answer_evaluator import LLMAnswerEvaluator
         # Call _calculate_ux_score without full init
         ux = LLMAnswerEvaluator._calculate_ux_score(None, score=1.0, response_time=5.0, difficulty="medium")
         det_result = {"score": 1.0, "grade": "correct", "method": "exact_match",
@@ -925,7 +925,8 @@ class TestSingleRewardSource:
     def test_learn_reward_comes_from_compute_reward(self):
         """Structural check: inference.learn feeds store_transition with compute_reward."""
         import ast
-        with open("api/inference.py") as f:
+        import adaptive.api.inference as _inference_mod
+        with open(_inference_mod.__file__) as f:
             tree = ast.parse(f.read())
         for node in ast.walk(tree):
             if isinstance(node, ast.AsyncFunctionDef) and node.name == "learn":
@@ -954,7 +955,7 @@ class TestAdaptiveGrading:
 
     def test_evaluator_config_defaults(self):
         """_get_evaluator_config returns sensible defaults when config is missing."""
-        from core.answer_evaluator import LLMAnswerEvaluator
+        from adaptive.core.answer_evaluator import LLMAnswerEvaluator
         cfg = LLMAnswerEvaluator._get_evaluator_config()
         assert "confidence_threshold" in cfg
         assert "max_samples" in cfg
@@ -976,7 +977,7 @@ class TestAdaptiveGrading:
 
     def test_prompt_requests_confidence(self):
         """Prompt template v3 asks the LLM for a confidence score."""
-        from core.prompts import answer_evaluator as tmpl
+        from adaptive.core.prompts import answer_evaluator as tmpl
         assert tmpl.VERSION == "v3"
         prompt = tmpl.build("What is 2+2?", "4", "4", "Arithmetic", 0.5)
         assert "confidence" in prompt.lower()
@@ -1009,7 +1010,7 @@ class TestAdaptiveGrading:
 
     def test_majority_vote_with_escalation(self):
         """Majority vote works correctly with 3 samples."""
-        from core.answer_evaluator import _majority_vote
+        from adaptive.core.answer_evaluator import _majority_vote
         results = [
             {"grade": "correct", "confidence": 0.6, "model_used": "a"},
             {"grade": "partially_correct", "confidence": 0.5, "model_used": "b"},
@@ -1022,7 +1023,7 @@ class TestAdaptiveGrading:
 
     def test_module_counters_exist(self):
         """Module-level escalation counters are accessible."""
-        import core.answer_evaluator as ev
+        import adaptive.core.answer_evaluator as ev
         assert hasattr(ev, "_eval_total")
         assert hasattr(ev, "_eval_escalated")
         assert isinstance(ev._eval_total, int)
@@ -1040,34 +1041,34 @@ class TestAuthorization:
     # --- Signup account_type ---
 
     def test_signup_defaults_to_student(self):
-        from api.schemas import UserIn
+        from adaptive.api.schemas import UserIn
         u = UserIn(username="test", password="longpassword123", email="test@example.com")
         assert u.account_type == "student"
 
     def test_signup_accepts_guardian(self):
-        from api.schemas import UserIn
+        from adaptive.api.schemas import UserIn
         u = UserIn(username="parent1", password="longpassword123", email="parent@example.com", account_type="guardian")
         assert u.account_type == "guardian"
 
     def test_signup_rejects_teacher(self):
-        from api.schemas import UserIn
+        from adaptive.api.schemas import UserIn
         with pytest.raises(Exception):
             UserIn(username="x", password="longpassword123", account_type="teacher")
 
     def test_signup_rejects_admin(self):
-        from api.schemas import UserIn
+        from adaptive.api.schemas import UserIn
         with pytest.raises(Exception):
             UserIn(username="x", password="longpassword123", account_type="admin")
 
     # --- SEC-IDOR: assert_owns_student binds writes to the caller ---
 
     def test_owns_student_allows_self(self):
-        from dependencies import assert_owns_student
+        from adaptive.dependencies import assert_owns_student
         me = {"username": "alice", "role": "student"}
         assert assert_owns_student(me, "alice") == "alice"
 
     def test_owns_student_blocks_other(self):
-        from dependencies import assert_owns_student
+        from adaptive.dependencies import assert_owns_student
         from fastapi import HTTPException
         me = {"username": "alice", "role": "student"}
         with pytest.raises(HTTPException) as exc:
@@ -1076,7 +1077,7 @@ class TestAuthorization:
 
     def test_owns_student_empty_defaults_to_self(self):
         """An empty/omitted student_id resolves to the caller, not a foreign id."""
-        from dependencies import assert_owns_student
+        from adaptive.dependencies import assert_owns_student
         me = {"username": "alice", "role": "student"}
         assert assert_owns_student(me, "") == "alice"
 
@@ -1084,7 +1085,7 @@ class TestAuthorization:
 
     @pytest.mark.asyncio
     async def test_guardian_blocked_from_student_endpoint(self):
-        from dependencies import require_role
+        from adaptive.dependencies import require_role
         checker = require_role("student")
         guardian_user = {"username": "parent1", "role": "guardian"}
         with patch("dependencies.get_current_user", return_value=guardian_user):
@@ -1095,7 +1096,7 @@ class TestAuthorization:
 
     @pytest.mark.asyncio
     async def test_student_blocked_from_guardian_endpoint(self):
-        from dependencies import require_role
+        from adaptive.dependencies import require_role
         checker = require_role("guardian")
         student_user = {"username": "student1", "role": "student"}
         with patch("dependencies.get_current_user", return_value=student_user):
@@ -1126,19 +1127,19 @@ class TestAuthorization:
     # --- Guardian schemas ---
 
     def test_guardian_redeem_schema(self):
-        from api.schemas import GuardianRedeemRequest
+        from adaptive.api.schemas import GuardianRedeemRequest
         r = GuardianRedeemRequest(code="abc123")
         assert r.code == "abc123"
 
     def test_guardian_children_response_schema(self):
-        from api.schemas import GuardianChildrenResponse, ChildSummary
+        from adaptive.api.schemas import GuardianChildrenResponse, ChildSummary
         resp = GuardianChildrenResponse(children=[
             ChildSummary(student_id="s1", total_questions=10, accuracy=85.0, topics_count=3),
         ])
         assert len(resp.children) == 1
 
     def test_guardian_child_overview_schema(self):
-        from api.schemas import GuardianChildOverview, StudentProgress
+        from adaptive.api.schemas import GuardianChildOverview, StudentProgress
         overview = GuardianChildOverview(
             student_id="s1",
             progress=StudentProgress(student_id="s1", topics={"algebra": 5}, total_questions=10, accuracy=80.0),
@@ -1211,14 +1212,14 @@ class TestJWTRefreshFlow:
             decode_token("garbage.token.value")
 
     def test_token_schema_has_refresh_token(self):
-        from api.schemas import Token
+        from adaptive.api.schemas import Token
         assert "refresh_token" in Token.model_fields
 
     @pytest.mark.asyncio
     async def test_refresh_token_rejected_as_bearer(self):
         """SEC: a refresh token must NOT authenticate a normal (access) route."""
         from security import create_refresh_token
-        from dependencies import get_current_user
+        from adaptive.dependencies import get_current_user
         from fastapi import HTTPException
         token, _ = create_refresh_token({"sub": "alice", "role": "student"})
         with pytest.raises(HTTPException) as exc:
@@ -1238,7 +1239,7 @@ class TestJWTRefreshFlow:
     async def test_stream_token_rejected_as_bearer(self):
         """SEC: a stream ticket must NOT authenticate normal API routes."""
         from security import create_stream_token
-        from dependencies import get_current_user
+        from adaptive.dependencies import get_current_user
         from fastapi import HTTPException
         tok = create_stream_token("alice")
         with pytest.raises(HTTPException) as exc:

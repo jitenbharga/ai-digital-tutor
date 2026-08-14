@@ -1,10 +1,10 @@
-"""
-T1.1 (breadth) — GET-surface smoke test.
+﻿"""
+T1.1 (breadth) â€” GET-surface smoke test.
 
 Drives every fillable GET route against a seeded in-memory account (mongomock +
 fake-LLM harness) and asserts it returns a *handled* status (no unhandled 5xx).
-This is a correctness guarantee — "a fresh/seeded account never crashes a read
-endpoint" — and it exercises a large slice of serve.py / api/extras.py.
+This is a correctness guarantee â€” "a fresh/seeded account never crashes a read
+endpoint" â€” and it exercises a large slice of serve.py / api/extras.py.
 """
 import os
 
@@ -22,14 +22,14 @@ FILL = {"student_id": "student_a", "subject": "math", "topic": "algebra"}
 
 # Routes intentionally skipped (reason in comment):
 SKIP = {
-    "/healthz",   # DB ping — MagicMock motor (503 by design here)
+    "/healthz",   # DB ping â€” MagicMock motor (503 by design here)
     "/metrics",   # Prometheus text, not user-scoped
     # retention_tracker caches its collection handle at module scope, which leaks
     # across test modules in a full-suite run; exercised directly elsewhere.
     "/me/retention",
     "/retention-summary",
     # routers/notebook.py binds `_notes_col = db["notes"]` at import (module scope),
-    # so the harness can't rewire it to mongomock — the handle stays a MagicMock and
+    # so the harness can't rewire it to mongomock â€” the handle stays a MagicMock and
     # `async for` over its cursor raises. Works against a real DB; covered elsewhere.
     "/me/notebook",
 }
@@ -37,11 +37,11 @@ SKIP = {
 
 @pytest.fixture(scope="module")
 def seeded_client():
-    os.environ.setdefault("GEMINI_API_KEY", "test-dummy-key")
-    os.environ.setdefault("GOOGLE_API_KEY", "test-dummy-key")
+    os.environ.setdefault("MISTRAL_API_KEY_1", "test-dummy-key")
+    os.environ.setdefault("GROQ_API_KEY_1", "test-dummy-key")
     os.environ.setdefault("ENVIRONMENT", "test")
     import serve
-    from dependencies import get_current_user
+    from adaptive.dependencies import get_current_user
     from mongomock_motor import AsyncMongoMockClient
 
     mockdb = AsyncMongoMockClient()["t"]

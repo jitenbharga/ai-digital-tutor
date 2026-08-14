@@ -6,7 +6,6 @@ build-backend = "setuptools.build_meta"
 name = "ai-digital-tutor-user-auth"
 version = "1.0.0"
 description = "AI Digital Tutor User & Auth Service"
-readme = ".env.example"
 requires-python = ">=3.10"
 dependencies = [
     "fastapi>=0.109.0",

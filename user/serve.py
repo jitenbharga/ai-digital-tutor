@@ -195,6 +195,8 @@ if ADAPTIVE_ENGINE_URL := os.getenv("ADAPTIVE_ENGINE_URL", "").strip():
 
 @app.api_route("/", methods=["GET", "HEAD"])
 @app.api_route("/healthz", methods=["GET", "HEAD"])
+@app.api_route("/api", methods=["GET", "HEAD"])
+@app.api_route("/api/healthz", methods=["GET", "HEAD"])
 async def healthz():
     mongo_ok = True
     try:

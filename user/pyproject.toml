@@ -32,4 +32,4 @@ py-modules = ["serve", "auth", "auth_config", "database", "dependencies", "rate_
 packages = ["api", "core", "repositories", "services"]
 
 [tool.vercel]
-entrypoint = "serve:app"
+entrypoint = "api.index:handler"

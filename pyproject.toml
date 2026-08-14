@@ -22,7 +22,7 @@ dependencies = [
 ]
 
 [tool.setuptools]
-packages = ["api", "backend"]
+packages = ["api", "backend", "user"]
 
 [tool.vercel]
-entrypoint = "api.index:handler"
+entrypoint = "serve:app"

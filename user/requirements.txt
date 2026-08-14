@@ -1,0 +1,28 @@
+# ============================================================
+# AI Digital Tutor — User Service (Vercel Auth Gateway)
+# Lightweight: NO ML deps, NO LLM deps, NO heavy libs
+# ============================================================
+
+# --- Web framework ---
+fastapi>=0.115.6,<0.116
+starlette>=0.41,<0.42
+uvicorn>=0.30,<1
+pydantic>=2.0,<3
+slowapi>=0.1.9,<1
+redis>=5,<6
+python-dotenv>=1.0,<2
+
+# --- Auth ---
+PyJWT[crypto]>=2.8,<3
+pwdlib[argon2,bcrypt]>=0.2,<1
+google-auth>=2.0,<3
+
+# --- Database ---
+motor>=3.4,<4
+
+# --- Observability ---
+sentry-sdk[fastapi]>=2.0,<3
+prometheus-client>=0.20,<1
+
+# --- Email (Brevo) ---
+sib-api-v3-sdk>=6.0,<7

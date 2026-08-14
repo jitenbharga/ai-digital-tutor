@@ -1,34 +1,136 @@
-# ============================================================
-# Production overrides (SEC M-9). Use together with the base file:
-#
-#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
-#
-# Provide these via a real secret store or an uncommitted env file:
-#   MONGO_ROOT_USER, MONGO_ROOT_PASSWORD, SECRET_KEY (>=32 random chars)
-# The DB/cache ports are NOT published here — put the API behind a TLS reverse
-# proxy and keep Mongo/Redis on the internal compose network only.
-# ============================================================
+version: "3.8"
 
 services:
-  mongo:
-    command: ["mongod", "--auth"]
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER:?set MONGO_ROOT_USER}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:?set MONGO_ROOT_PASSWORD}
-    ports: []          # do not expose the database to the host in production
-
   redis:
-    ports: []          # internal only
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
 
-  api:
+  user:
+    build:
+      context: ./user
+      dockerfile: Dockerfile
+    ports:
+      - "8001:8000"
     environment:
-      ENVIRONMENT: production
-      # Authenticated connection string (authSource=admin for the root user).
-      MONGODB_URI: mongodb://${MONGO_ROOT_USER}:${MONGO_ROOT_PASSWORD}@mongo:27017/?authSource=admin
-      # Shared rate-limit store is already wired in the base file (redis://redis:6379).
-      # Indexes are created by the migration step, not lazily at startup:
-      AUTO_ENSURE_INDEXES: "0"
+      - ENVIRONMENT=production
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - MONGODB_URI=${MONGODB_URI}
+      - DB_NAME=digital_tutor
+      - RATE_LIMIT_STORAGE_URI=redis://redis:6379
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
+      - APP_BASE_URL=${APP_BASE_URL}
+      - ADAPTIVE_ENGINE_URL=http://adaptive:8000
+      - BREVO_API_KEY=${BREVO_API_KEY}
+      - BREVO_SENDER_EMAIL=${BREVO_SENDER_EMAIL}
+      - BREVO_SENDER_NAME=Digital Tutor
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - SENTRY_DSN=${SENTRY_DSN}
+      - LOG_FORMAT=json
+      - AUTO_ENSURE_INDEXES=0
+    depends_on:
+      redis:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+
+  adaptive:
+    build:
+      context: ./adaptive
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=production
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - MONGODB_URI=${MONGODB_URI}
+      - DB_NAME=digital_tutor
+      - RATE_LIMIT_STORAGE_URI=redis://redis:6379
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
+      - APP_BASE_URL=${APP_BASE_URL}
+      - BREVO_API_KEY=${BREVO_API_KEY}
+      - BREVO_SENDER_EMAIL=${BREVO_SENDER_EMAIL}
+      - BREVO_SENDER_NAME=Digital Tutor
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - SENTRY_DSN=${SENTRY_DSN}
+      - LOG_FORMAT=json
+      - AUTO_ENSURE_INDEXES=0
+      - MISTRAL_API_KEY=${MISTRAL_API_KEY}
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    depends_on:
+      redis:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: "2"
+          memory: 4G
+
+  mongo:
+    image: mongo:7
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 2G
+
+  caddy:
+    image: caddy:2-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - user
+      - adaptive
+      - frontend
 
   frontend:
-    ports:
-      - "80:80"          # front this with TLS termination (e.g. a proxy / LB)
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+    environment:
+      - VITE_API_URL=https://${DOMAIN}
+      - VITE_ADAPTIVE_URL=https://${DOMAIN}
+    depends_on:
+      - user
+      - adaptive
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 256M
+
+volumes:
+  redis_data:
+  mongo_data:
+  caddy_data:
+  caddy_config:

@@ -11,7 +11,7 @@ import re
 import time
 from typing import Any, Dict, List, Optional
 
-from database import curricula_collection, curriculum_progress_collection
+from adaptive.database import curricula_collection, curriculum_progress_collection
 
 logger = logging.getLogger("curriculum_engine")
 

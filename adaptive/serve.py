@@ -2,10 +2,10 @@ import json
 import os
 import uuid
 from contextvars import ContextVar
-from database import client, llm_calls_collection
+from adaptive.database import client, llm_calls_collection
 from fastapi import FastAPI, Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
-from core.llm_telemetry import init_telemetry
+from adaptive.core.llm_telemetry import init_telemetry
 from fastapi.middleware.cors import CORSMiddleware
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
@@ -15,7 +15,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 if os.getenv("LOG_FORMAT"):
-    from core.logging_config import configure_logging
+    from adaptive.core.logging_config import configure_logging
     configure_logging()
 
 request_id_ctx: ContextVar[str] = ContextVar("request_id", default="-")
@@ -71,7 +71,7 @@ class MetricsMiddleware(BaseHTTPMiddleware):
         try:
             route = request.scope.get("route")
             template = getattr(route, "path", None) or "unmatched"
-            from core.metrics import record_request
+            from adaptive.core.metrics import record_request
             record_request(
                 request.method, template, response.status_code, _t.perf_counter() - start
             )
@@ -109,11 +109,11 @@ app = FastAPI(
     redoc_url=None,
 )
 
-from rate_limit import limiter
+from adaptive.rate_limit import limiter
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-from core.exceptions import TutorError
+from adaptive.core.exceptions import TutorError
 
 @app.exception_handler(TutorError)
 async def tutor_error_handler(request: Request, exc: TutorError):
@@ -156,24 +156,24 @@ app.add_middleware(RequestIDMiddleware)
 app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(MetricsMiddleware)
 
-from api.extras import router as extras_router
+from adaptive.api.extras import router as extras_router
 app.include_router(extras_router)
 
-from routers.notebook import router as notebook_router
-from routers.onboarding import router as onboarding_router
-from routers.materials import router as materials_router
-from routers.study_aids import router as study_aids_router
-from routers.guardian import router as guardian_router
-from routers.review import router as review_router
-from routers.quiz import router as quiz_router
-from routers.gamification import router as gamification_router
-from routers.curriculum import router as curriculum_router
-from routers.mastery import router as mastery_router
-from routers.tutor import router as tutor_router
-from routers.admin import router as admin_router
-from routers.profile import router as profile_router
-from routers.certificates import router as certificates_router
-from routers.social import router as social_router
+from adaptive.routers.notebook import router as notebook_router
+from adaptive.routers.onboarding import router as onboarding_router
+from adaptive.routers.materials import router as materials_router
+from adaptive.routers.study_aids import router as study_aids_router
+from adaptive.routers.guardian import router as guardian_router
+from adaptive.routers.review import router as review_router
+from adaptive.routers.quiz import router as quiz_router
+from adaptive.routers.gamification import router as gamification_router
+from adaptive.routers.curriculum import router as curriculum_router
+from adaptive.routers.mastery import router as mastery_router
+from adaptive.routers.tutor import router as tutor_router
+from adaptive.routers.admin import router as admin_router
+from adaptive.routers.profile import router as profile_router
+from adaptive.routers.certificates import router as certificates_router
+from adaptive.routers.social import router as social_router
 app.include_router(notebook_router)
 app.include_router(onboarding_router)
 app.include_router(materials_router)
@@ -190,10 +190,10 @@ app.include_router(profile_router)
 app.include_router(certificates_router)
 app.include_router(social_router)
 
-from routers.mastery import get_progress_snapshot
-from routers.quiz import _save_active_quiz, _get_active_quiz, _get_quiz_engine
+from adaptive.routers.mastery import get_progress_snapshot
+from adaptive.routers.quiz import _save_active_quiz, _get_active_quiz, _get_quiz_engine
 
-from runtime import (
+from adaptive.runtime import (
     tutor, Hint, graph_engine, review_engine, study_planner, challenge_engine,
     _concept_mastery, _require_feature, _FEATURE_EXPERIMENTS, _is_feature_on_for_user,
 )
@@ -219,7 +219,7 @@ async def healthz():
 
     store_ok = True
     try:
-        from rate_limit import ping_rate_limit_store
+        from adaptive.rate_limit import ping_rate_limit_store
         store_ok = ping_rate_limit_store()
     except Exception as e:
         store_ok = False
@@ -238,7 +238,7 @@ async def healthz():
 
 @app.get("/metrics")
 async def metrics():
-    from core.metrics import render, CONTENT_TYPE_LATEST
+    from adaptive.core.metrics import render, CONTENT_TYPE_LATEST
     return Response(content=render(), media_type=CONTENT_TYPE_LATEST)
 
 
@@ -248,7 +248,7 @@ async def startup():
         await client.server_info()
         logger.info("MongoDB connected")
         if os.getenv("AUTO_ENSURE_INDEXES", "1") != "0":
-            from database import ensure_indexes
+            from adaptive.database import ensure_indexes
             await ensure_indexes()
         else:
             logger.info("AUTO_ENSURE_INDEXES=0 — run scripts/migrate_indexes.py at deploy")
@@ -257,7 +257,7 @@ async def startup():
         logger.warning("Running in degraded mode — DB-dependent features will error on use")
 
     try:
-        from rate_limit import ping_rate_limit_store
+        from adaptive.rate_limit import ping_rate_limit_store
         if not ping_rate_limit_store():
             logger.warning(
                 "Rate-limit store configured but unreachable — limits may not be "
@@ -279,13 +279,13 @@ async def startup():
         logger.warning(f"Telemetry init skipped: {e}")
 
     try:
-        from core.ab_experiment import ensure_rl_experiment
+        from adaptive.core.ab_experiment import ensure_rl_experiment
         await ensure_rl_experiment()
     except Exception as e:
         logger.warning(f"AB experiment init skipped: {e}")
 
     try:
-        from core.ab_experiment import get_experiment_manager
+        from adaptive.core.ab_experiment import get_experiment_manager
         exp_mgr = get_experiment_manager()
         _delight_experiments = [
             ("gamification_v1", "P5: Gamification (XP, streaks, badges) vs no gamification"),

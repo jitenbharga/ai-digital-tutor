@@ -3,8 +3,8 @@ from fastapi.security import OAuth2PasswordBearer
 import jwt
 from jwt import PyJWTError as JWTError
 
-from auth_config import SECRET_KEY, ALGORITHM
-from database import users_collection
+from user.auth_config import SECRET_KEY, ALGORITHM
+from user.database import users_collection
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
@@ -20,7 +20,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
         if payload.get("type", "access") != "access":
             raise HTTPException(status_code=401, detail="Invalid token type")
 
-        from repositories.users import UserRepository
+        from user.repositories.users import UserRepository
         user = await UserRepository.get_by_username(username)
 
         if not user:

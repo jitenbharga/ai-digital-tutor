@@ -1,6 +1,6 @@
 """Versioned prompt templates for Ask-Anything (N1) and Explain-Again (N2)."""
 
-from utils.prompt_safety import wrap_student_text
+from adaptive.utils.prompt_safety import wrap_student_text
 
 VERSION = "v1"
 

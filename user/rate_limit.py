@@ -12,8 +12,8 @@ import jwt
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 
-from auth_config import SECRET_KEY, ALGORITHM
-from dependencies import get_current_user
+from user.auth_config import SECRET_KEY, ALGORITHM
+from user.dependencies import get_current_user
 
 logger = logging.getLogger(__name__)
 
@@ -87,7 +87,7 @@ LLM_DAILY_REQUEST_CAP = int(os.getenv("LLM_DAILY_REQUEST_CAP", "300"))
 
 async def check_llm_budget(current_user: dict = Depends(get_current_user)):
     from pymongo import ReturnDocument
-    from database import llm_usage_collection
+    from user.database import llm_usage_collection
 
     day = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     username = (

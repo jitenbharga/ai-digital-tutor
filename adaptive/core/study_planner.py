@@ -1,10 +1,10 @@
 import time
 from typing import Dict, List
 
-from core.llm_registry import build_models
-from core.llm_utils import call_llm
-from core.review_engine import ReviewEngine
-from core.prompts import study_planner as prompt_tmpl
+from adaptive.core.llm_registry import build_models
+from adaptive.core.llm_utils import call_llm
+from adaptive.core.review_engine import ReviewEngine
+from adaptive.core.prompts import study_planner as prompt_tmpl
 
 
 class StudyPlanner:

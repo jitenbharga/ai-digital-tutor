@@ -3,10 +3,10 @@ Quiz Engine: generates LLM-powered MCQ quizzes with 4 options per question.
 Supports single-correct and multiple-correct questions.
 """
 import logging
-from core.llm_utils import call_llm
-from core.llm_registry import build_models_cheap
-from core.prompts import quiz_generator
-from core.llm_utils import parse_json_robust as safe_parse_json
+from adaptive.core.llm_utils import call_llm
+from adaptive.core.llm_registry import build_models_cheap
+from adaptive.core.prompts import quiz_generator
+from adaptive.core.llm_utils import parse_json_robust as safe_parse_json
 
 logger = logging.getLogger(__name__)
 

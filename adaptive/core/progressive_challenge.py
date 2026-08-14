@@ -1,8 +1,8 @@
 from typing import Dict
 
-from core.llm_registry import build_models
-from core.llm_utils import call_llm
-from core.prompts import progressive_challenge as prompt_tmpl
+from adaptive.core.llm_registry import build_models
+from adaptive.core.llm_utils import call_llm
+from adaptive.core.prompts import progressive_challenge as prompt_tmpl
 
 
 class ProgressiveChallengeEngine:

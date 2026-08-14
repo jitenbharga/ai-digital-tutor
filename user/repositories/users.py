@@ -1,4 +1,4 @@
-from database import users_collection
+from user.database import users_collection
 import logging
 
 logger = logging.getLogger(__name__)

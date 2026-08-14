@@ -13,9 +13,9 @@ import logging
 import re
 from typing import Dict, List, Optional, Tuple
 
-from core.llm_registry import build_models_cheap
-from core.llm_utils import call_llm
-from core.llm_telemetry import get_telemetry
+from adaptive.core.llm_registry import build_models_cheap
+from adaptive.core.llm_utils import call_llm
+from adaptive.core.llm_telemetry import get_telemetry
 
 logger = logging.getLogger("answer_verifier")
 

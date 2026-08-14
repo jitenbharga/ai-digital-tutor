@@ -13,7 +13,7 @@ import time
 from collections import OrderedDict
 from typing import Any, Dict, Optional, Tuple
 
-from core.llm_registry import get_llm_config
+from adaptive.core.llm_registry import get_llm_config
 
 logger = logging.getLogger("llm_cache")
 

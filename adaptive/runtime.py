@@ -9,13 +9,13 @@ import logging
 
 from fastapi import HTTPException
 
-from api.inference import ProductionTutor
-from core.hint_engine import HintGenerator
-from core.knowledge_graph import KnowledgeGraphEngine
-from core.review_engine import ReviewEngine
-from core.study_planner import StudyPlanner
-from core.progressive_challenge import ProgressiveChallengeEngine
-from core.ab_experiment import get_experiment_manager
+from adaptive.api.inference import ProductionTutor
+from adaptive.core.hint_engine import HintGenerator
+from adaptive.core.knowledge_graph import KnowledgeGraphEngine
+from adaptive.core.review_engine import ReviewEngine
+from adaptive.core.study_planner import StudyPlanner
+from adaptive.core.progressive_challenge import ProgressiveChallengeEngine
+from adaptive.core.ab_experiment import get_experiment_manager
 
 logger = logging.getLogger(__name__)
 

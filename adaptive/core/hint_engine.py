@@ -1,6 +1,6 @@
-from core.llm_registry import build_models
-from core.llm_utils import call_llm_text
-from core.prompts import hint as prompt_tmpl
+from adaptive.core.llm_registry import build_models
+from adaptive.core.llm_utils import call_llm_text
+from adaptive.core.prompts import hint as prompt_tmpl
 
 
 class HintGenerator:

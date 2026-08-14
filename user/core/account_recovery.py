@@ -3,7 +3,7 @@ import logging
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
-from database import auth_tokens_collection
+from user.database import auth_tokens_collection
 
 logger = logging.getLogger(__name__)
 

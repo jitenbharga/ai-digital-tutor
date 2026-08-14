@@ -1,4 +1,4 @@
-from database import refresh_tokens_collection
+from user.database import refresh_tokens_collection
 from datetime import datetime, timezone
 import logging
 

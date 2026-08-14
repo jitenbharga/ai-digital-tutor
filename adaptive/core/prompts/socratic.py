@@ -1,7 +1,7 @@
 """Versioned prompt templates for SocraticEngine (3 modes)."""
 
 from typing import Dict, List
-from utils.prompt_safety import wrap_student_text
+from adaptive.utils.prompt_safety import wrap_student_text
 
 VERSION = "v2"
 

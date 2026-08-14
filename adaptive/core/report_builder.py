@@ -10,7 +10,7 @@ Produces a clean, single-page (or multi-page) report with:
 from datetime import datetime, timezone
 from io import BytesIO
 
-from core.capabilities import HAS_REPORTLAB
+from adaptive.core.capabilities import HAS_REPORTLAB
 
 if HAS_REPORTLAB:
     from reportlab.lib.pagesizes import A4

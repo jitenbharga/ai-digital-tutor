@@ -5,7 +5,7 @@ Produces a celebratory PDF certificate when a student masters a topic.
 import uuid
 from datetime import datetime, timezone
 from io import BytesIO
-from core.capabilities import HAS_REPORTLAB
+from adaptive.core.capabilities import HAS_REPORTLAB
 
 if HAS_REPORTLAB:
     from reportlab.lib.pagesizes import landscape, A4

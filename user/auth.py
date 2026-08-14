@@ -7,21 +7,21 @@ from fastapi import APIRouter, HTTPException, Depends, Request, Response, Body, 
 from fastapi.security import OAuth2PasswordRequestForm
 from jwt import PyJWTError as JWTError
 
-from api.schemas import UserIn, Token, GoogleAuthRequest, ForgotPasswordRequest, ResetPasswordRequest, VerifyEmailRequest, ResendVerificationRequest
-from database import users_collection, refresh_tokens_collection
-from security import hash_password, verify_password
-from dependencies import require_role, get_current_user
+from user.api.schemas import UserIn, Token, GoogleAuthRequest, ForgotPasswordRequest, ResetPasswordRequest, VerifyEmailRequest, ResendVerificationRequest
+from user.database import users_collection, refresh_tokens_collection
+from user.security import hash_password, verify_password
+from user.dependencies import require_role, get_current_user
 from slowapi import Limiter
 from slowapi.util import get_remote_address
-from core.account_recovery import (
+from user.core.account_recovery import (
     create_token, consume_token, PURPOSE_VERIFY, PURPOSE_RESET,
     VERIFY_TOKEN_TTL_SECONDS, RESET_TOKEN_TTL_SECONDS,
 )
-from core.emailer import send_email, emailer_configured
-from core.email_templates import verification_email, password_reset_email
-from core.login_guard import assert_login_allowed, record_login_failure, clear_login_failures
-from services.token_service import TokenService
-from rate_limit import limiter as shared_limiter
+from user.core.emailer import send_email, emailer_configured
+from user.core.email_templates import verification_email, password_reset_email
+from user.core.login_guard import assert_login_allowed, record_login_failure, clear_login_failures
+from user.services.token_service import TokenService
+from user.rate_limit import limiter as shared_limiter
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -98,7 +98,7 @@ async def signup(request: Request, user: UserIn):
             )
         is_minor = age < 18
 
-    from repositories.users import UserRepository
+    from user.repositories.users import UserRepository
 
     _generic_ok = {
         "message": "If the username and email are available, your account was created. "
@@ -138,7 +138,7 @@ async def signup(request: Request, user: UserIn):
         verify_link = ""
 
     try:
-        from core.analytics import track_signup
+        from user.core.analytics import track_signup
         _t = asyncio.create_task(track_signup(user.username, role))
         _background_tasks.add(_t)
         _t.add_done_callback(_background_tasks.discard)
@@ -164,7 +164,7 @@ async def login(
 
     await assert_login_allowed(identifier)
 
-    from repositories.users import UserRepository
+    from user.repositories.users import UserRepository
     user = await UserRepository.get_by_email(identifier)
 
     if (
@@ -219,8 +219,8 @@ async def refresh(
     if not jti:
         raise HTTPException(401, "Malformed refresh token")
 
-    from repositories.refresh_tokens import RefreshTokenRepository
-    from repositories.users import UserRepository
+    from user.repositories.refresh_tokens import RefreshTokenRepository
+    from user.repositories.users import UserRepository
 
     stored = await RefreshTokenRepository.get(jti)
     if not stored:
@@ -265,7 +265,7 @@ async def logout(
     if payload.get("sub") != current_user.get("username"):
         raise HTTPException(403, "Cannot revoke another user's token")
 
-    from repositories.refresh_tokens import RefreshTokenRepository
+    from user.repositories.refresh_tokens import RefreshTokenRepository
     await RefreshTokenRepository.revoke(jti)
 
     return {"message": "Logged out successfully"}
@@ -274,7 +274,7 @@ async def logout(
 @router.post("/forgot-password")
 @shared_limiter.limit("5/minute")
 async def forgot_password(request: Request, body: ForgotPasswordRequest):
-    from core.account_recovery import create_token, PURPOSE_RESET, RESET_TOKEN_TTL_SECONDS
+    from user.core.account_recovery import create_token, PURPOSE_RESET, RESET_TOKEN_TTL_SECONDS
 
     ident = (body.username or body.email or "").strip().lower()
     generic = {
@@ -283,7 +283,7 @@ async def forgot_password(request: Request, body: ForgotPasswordRequest):
     if not ident:
         return generic
 
-    from repositories.users import UserRepository
+    from user.repositories.users import UserRepository
     user = await UserRepository.get_by_username_or_email(ident)
     if not user:
         return generic
@@ -314,15 +314,15 @@ async def forgot_password(request: Request, body: ForgotPasswordRequest):
 @router.post("/reset-password")
 @shared_limiter.limit("5/minute")
 async def reset_password(request: Request, body: ResetPasswordRequest):
-    from core.account_recovery import consume_token, PURPOSE_RESET
+    from user.core.account_recovery import consume_token, PURPOSE_RESET
 
     if len((body.new_password or "")) < 8:
         raise HTTPException(400, "Password must be at least 8 characters")
     username = await consume_token(body.token, PURPOSE_RESET)
     if not username:
         raise HTTPException(400, "Invalid or expired reset token")
-    from repositories.users import UserRepository
-    from repositories.refresh_tokens import RefreshTokenRepository
+    from user.repositories.users import UserRepository
+    from user.repositories.refresh_tokens import RefreshTokenRepository
     await UserRepository.set_password(username, hash_password(body.new_password))
     await RefreshTokenRepository.revoke_family(username)
     return {"message": "Password has been reset. Please log in."}
@@ -348,12 +348,12 @@ async def request_email_verification(
 @router.post("/verify-email")
 @shared_limiter.limit("10/minute")
 async def verify_email(request: Request, body: VerifyEmailRequest):
-    from core.account_recovery import consume_token, PURPOSE_VERIFY
+    from user.core.account_recovery import consume_token, PURPOSE_VERIFY
 
     username = await consume_token(body.token, PURPOSE_VERIFY)
     if not username:
         raise HTTPException(400, "Invalid or expired verification token")
-    from repositories.users import UserRepository
+    from user.repositories.users import UserRepository
     await UserRepository.set_email_verified(username, True)
     return {"message": "Email verified."}
 
@@ -365,7 +365,7 @@ async def resend_verification(request: Request, body: ResendVerificationRequest)
     generic = {"message": "If that email needs verification, a new link has been sent."}
     if not email:
         return generic
-    from repositories.users import UserRepository
+    from user.repositories.users import UserRepository
     user = await UserRepository.get_by_email(email)
     if user and user.get("email") and not user.get("email_verified"):
         try:
@@ -404,7 +404,7 @@ async def google_auth(request: Request, response: Response, body: GoogleAuthRequ
     google_sub = info.get("sub", "")
     display_name = info.get("name") or email.split("@")[0]
 
-    from repositories.users import UserRepository
+    from user.repositories.users import UserRepository
 
     user = await UserRepository.get_by_email(email)
     if not user:
@@ -426,7 +426,7 @@ async def google_auth(request: Request, response: Response, body: GoogleAuthRequ
         await UserRepository.create(doc)
         user = doc
         try:
-            from core.analytics import track_signup
+            from user.core.analytics import track_signup
             _t = asyncio.create_task(track_signup(username, role))
             _background_tasks.add(_t)
             _t.add_done_callback(_background_tasks.discard)
@@ -449,7 +449,7 @@ async def google_auth(request: Request, response: Response, body: GoogleAuthRequ
 async def _unique_username_from_email(email: str) -> str:
     import re as _re
     import secrets as _secrets
-    from repositories.users import UserRepository
+    from user.repositories.users import UserRepository
 
     base = _re.sub(r"[^a-zA-Z0-9_\-.]", "", email.split("@")[0])[:24]
     if len(base) < 3:

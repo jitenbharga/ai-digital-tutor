@@ -12,11 +12,11 @@ This is the single entry point the rest of the codebase calls.
 import logging
 from typing import Dict, List, Optional, Tuple
 
-from core.knowledge_tracing.bkt import (
+from adaptive.core.knowledge_tracing.bkt import (
     run_bkt, predict_correct, fit_params, DEFAULT_PARAMS,
 )
-from config.features import DKT_ENABLED
-from database import interactions_collection
+from adaptive.config.features import DKT_ENABLED
+from adaptive.database import interactions_collection
 
 logger = logging.getLogger("knowledge_tracing.manager")
 

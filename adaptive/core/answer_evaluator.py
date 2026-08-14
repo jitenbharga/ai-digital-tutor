@@ -17,9 +17,9 @@ import logging
 import re
 from typing import Dict, List, Optional, Tuple
 
-from core.llm_registry import build_models_cheap, get_llm_config
-from core.llm_utils import call_llm
-from core.prompts import answer_evaluator as prompt_tmpl
+from adaptive.core.llm_registry import build_models_cheap, get_llm_config
+from adaptive.core.llm_utils import call_llm
+from adaptive.core.prompts import answer_evaluator as prompt_tmpl
 
 logger = logging.getLogger("answer_evaluator")
 

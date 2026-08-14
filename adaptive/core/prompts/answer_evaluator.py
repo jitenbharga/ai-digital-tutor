@@ -1,6 +1,6 @@
 """Versioned prompt template for LLMAnswerEvaluator (G3: coarse rubric)."""
 
-from utils.prompt_safety import wrap_student_text
+from adaptive.utils.prompt_safety import wrap_student_text
 
 VERSION = "v3"
 

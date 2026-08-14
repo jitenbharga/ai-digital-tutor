@@ -22,9 +22,9 @@ from langchain_core.messages import HumanMessage
 from langchain_core.language_models.chat_models import BaseChatModel
 from pydantic import BaseModel, ValidationError
 
-from core.llm_cache import get_llm_cache
-from core.llm_registry import get_llm_config, get_tier_for_engine, mark_cooldown
-from core.llm_telemetry import get_telemetry
+from adaptive.core.llm_cache import get_llm_cache
+from adaptive.core.llm_registry import get_llm_config, get_tier_for_engine, mark_cooldown
+from adaptive.core.llm_telemetry import get_telemetry
 
 logger = logging.getLogger("llm_utils")
 

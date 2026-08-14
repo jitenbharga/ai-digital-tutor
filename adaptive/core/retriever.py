@@ -20,7 +20,7 @@ import numpy as np
 
 logger = logging.getLogger("retriever")
 
-from core.capabilities import HAS_RAG
+from adaptive.core.capabilities import HAS_RAG
 
 # Lazy imports — only loaded if HAS_RAG is True
 _faiss = None

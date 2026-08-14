@@ -14,7 +14,7 @@ import time
 from collections import defaultdict, deque
 from typing import Dict, List, Optional, Any
 
-from core.prerequisite_engine import PrerequisiteEngine
+from adaptive.core.prerequisite_engine import PrerequisiteEngine
 
 logger = logging.getLogger("learning_path")
 

@@ -2,10 +2,10 @@ import json
 import os
 import uuid
 from contextvars import ContextVar
-from database import client
+from user.database import client
 from fastapi import FastAPI, Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
-from auth import router as auth_router
+from user.auth import router as auth_router
 from fastapi.middleware.cors import CORSMiddleware
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
@@ -15,7 +15,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 if os.getenv("LOG_FORMAT"):
-    from core.logging_config import configure_logging
+    from user.core.logging_config import configure_logging
     configure_logging()
 
 request_id_ctx: ContextVar[str] = ContextVar("request_id", default="-")
@@ -71,7 +71,7 @@ class MetricsMiddleware(BaseHTTPMiddleware):
         try:
             route = request.scope.get("route")
             template = getattr(route, "path", None) or "unmatched"
-            from core.metrics import record_request
+            from user.core.metrics import record_request
             record_request(
                 request.method, template, response.status_code, _t.perf_counter() - start
             )
@@ -109,11 +109,11 @@ app = FastAPI(
     redoc_url=None,
 )
 
-from rate_limit import limiter
+from user.rate_limit import limiter
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-from core.exceptions import TutorError
+from user.core.exceptions import TutorError
 
 @app.exception_handler(TutorError)
 async def tutor_error_handler(request: Request, exc: TutorError):
@@ -158,7 +158,7 @@ app.add_middleware(MetricsMiddleware)
 
 app.include_router(auth_router)
 
-from ai_proxy import proxy_router
+from user.ai_proxy import proxy_router
 if ADAPTIVE_ENGINE_URL := os.getenv("ADAPTIVE_ENGINE_URL", "").strip():
     logger.info("Auth Gateway Mode active — Proxying AI requests to Adaptive Engine (%s)", ADAPTIVE_ENGINE_URL)
     app.include_router(proxy_router)
@@ -174,7 +174,7 @@ async def healthz():
 
     store_ok = True
     try:
-        from rate_limit import ping_rate_limit_store
+        from user.rate_limit import ping_rate_limit_store
         store_ok = ping_rate_limit_store()
     except Exception as e:
         store_ok = False
@@ -193,7 +193,7 @@ async def healthz():
 
 @app.get("/metrics")
 async def metrics():
-    from core.metrics import render, CONTENT_TYPE_LATEST
+    from user.core.metrics import render, CONTENT_TYPE_LATEST
     return Response(content=render(), media_type=CONTENT_TYPE_LATEST)
 
 
@@ -203,7 +203,7 @@ async def startup():
         await client.server_info()
         logger.info("MongoDB connected")
         if os.getenv("AUTO_ENSURE_INDEXES", "1") != "0":
-            from database import ensure_indexes
+            from user.database import ensure_indexes
             await ensure_indexes()
         else:
             logger.info("AUTO_ENSURE_INDEXES=0 — run scripts/migrate_indexes.py at deploy")
@@ -212,7 +212,7 @@ async def startup():
         logger.warning("Running in degraded mode — DB-dependent features will error on use")
 
     try:
-        from rate_limit import ping_rate_limit_store
+        from user.rate_limit import ping_rate_limit_store
         if not ping_rate_limit_store():
             logger.warning(
                 "Rate-limit store configured but unreachable — limits may not be "

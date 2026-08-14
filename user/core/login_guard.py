@@ -2,7 +2,7 @@ import os
 import logging
 from datetime import datetime, timedelta, timezone
 
-from database import login_attempts_collection
+from user.database import login_attempts_collection
 
 logger = logging.getLogger(__name__)
 

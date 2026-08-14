@@ -13,7 +13,7 @@ import time
 import uuid
 from typing import Any, Dict, List, Optional
 
-from database import projects_collection
+from adaptive.database import projects_collection
 
 logger = logging.getLogger("project_engine")
 

@@ -1,11 +1,11 @@
 import logging
 from typing import Dict
 
-from core.llm_registry import build_models
-from core.llm_utils import call_llm
-from core.llm_cache import build_cache_key
-from core.prompts import explainer as prompt_tmpl
-from core.retriever import retrieve, format_grounding_context
+from adaptive.core.llm_registry import build_models
+from adaptive.core.llm_utils import call_llm
+from adaptive.core.llm_cache import build_cache_key
+from adaptive.core.prompts import explainer as prompt_tmpl
+from adaptive.core.retriever import retrieve, format_grounding_context
 
 logger = logging.getLogger("adaptive_explainer")
 

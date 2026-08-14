@@ -226,11 +226,11 @@ export const api = {
   checkCertificates: () => request('/me/check-certificates', { method: 'POST' }),
   downloadReport: () => {
     const token = getToken();
-    return fetch('/api/me/report', { headers: { Authorization: `Bearer ${token}` }, credentials: 'include' });
+    return fetch(`${BASE}/me/report`, { headers: { Authorization: `Bearer ${token}` }, credentials: 'include' });
   },
   downloadCertPdf: (certId) => {
     const token = getToken();
-    return fetch(`/api/me/certificates/${certId}/pdf`, { headers: { Authorization: `Bearer ${token}` }, credentials: 'include' });
+    return fetch(`${BASE}/me/certificates/${certId}/pdf`, { headers: { Authorization: `Bearer ${token}` }, credentials: 'include' });
   },
 
   // Study buddy (shared streak)

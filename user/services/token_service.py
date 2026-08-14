@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
-from repositories.refresh_tokens import RefreshTokenRepository
-from security import create_access_token, create_refresh_token
-from auth_config import ACCESS_TOKEN_EXPIRE_MINUTES, REFRESH_TOKEN_EXPIRE_DAYS
+from user.repositories.refresh_tokens import RefreshTokenRepository
+from user.security import create_access_token, create_refresh_token
+from user.auth_config import ACCESS_TOKEN_EXPIRE_MINUTES, REFRESH_TOKEN_EXPIRE_DAYS
 import logging
 
 logger = logging.getLogger(__name__)
@@ -32,5 +32,5 @@ class TokenService:
 
 def decode_token(token: str) -> dict:
     import jwt
-    from auth_config import SECRET_KEY, ALGORITHM
+    from user.auth_config import SECRET_KEY, ALGORITHM
     return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])

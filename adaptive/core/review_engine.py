@@ -29,9 +29,9 @@ except ImportError:
     Scheduler = Card = Rating = State = None
     _scheduler = None
 
-from core.llm_registry import build_models_cheap
-from core.llm_utils import call_llm
-from core.prompts import review as prompt_tmpl
+from adaptive.core.llm_registry import build_models_cheap
+from adaptive.core.llm_utils import call_llm
+from adaptive.core.prompts import review as prompt_tmpl
 
 
 def _get_or_create_card(concept):

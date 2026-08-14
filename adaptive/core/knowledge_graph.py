@@ -1,8 +1,8 @@
 from typing import Dict, List
 
-from core.llm_registry import build_models_cheap
-from core.llm_utils import call_llm
-from core.prompts import knowledge_graph as prompt_tmpl
+from adaptive.core.llm_registry import build_models_cheap
+from adaptive.core.llm_utils import call_llm
+from adaptive.core.prompts import knowledge_graph as prompt_tmpl
 
 
 class KnowledgeGraphEngine:

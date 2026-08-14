@@ -17,7 +17,10 @@ except ImportError:
     from database import client
 from fastapi import FastAPI, Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
-from user.auth import router as auth_router
+try:
+    from user.auth import router as auth_router
+except ImportError:
+    from auth import router as auth_router
 from fastapi.middleware.cors import CORSMiddleware
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
@@ -27,7 +30,10 @@ import logging
 logger = logging.getLogger(__name__)
 
 if os.getenv("LOG_FORMAT"):
-    from user.core.logging_config import configure_logging
+    try:
+        from user.core.logging_config import configure_logging
+    except ImportError:
+        from core.logging_config import configure_logging
     configure_logging()
 
 request_id_ctx: ContextVar[str] = ContextVar("request_id", default="-")
@@ -170,11 +176,16 @@ app.add_middleware(MetricsMiddleware)
 
 app.include_router(auth_router)
 
-from user.ai_proxy import proxy_router
+try:
+    from user.ai_proxy import proxy_router
+except ImportError:
+    from ai_proxy import proxy_router
+
 if ADAPTIVE_ENGINE_URL := os.getenv("ADAPTIVE_ENGINE_URL", "").strip():
     logger.info("Auth Gateway Mode active — Proxying AI requests to Adaptive Engine (%s)", ADAPTIVE_ENGINE_URL)
     app.include_router(proxy_router)
 
+@app.api_route("/", methods=["GET", "HEAD"])
 @app.api_route("/healthz", methods=["GET", "HEAD"])
 async def healthz():
     mongo_ok = True
@@ -186,7 +197,10 @@ async def healthz():
 
     store_ok = True
     try:
-        from user.rate_limit import ping_rate_limit_store
+        try:
+            from user.rate_limit import ping_rate_limit_store
+        except ImportError:
+            from rate_limit import ping_rate_limit_store
         store_ok = ping_rate_limit_store()
     except Exception as e:
         store_ok = False
@@ -195,6 +209,7 @@ async def healthz():
     return Response(
         content=json.dumps({
             "status": "ok" if mongo_ok else "degraded",
+            "service": "user-auth-api",
             "mongo": mongo_ok,
             "rate_limit_store": store_ok,
         }),
@@ -205,7 +220,10 @@ async def healthz():
 
 @app.get("/metrics")
 async def metrics():
-    from user.core.metrics import render, CONTENT_TYPE_LATEST
+    try:
+        from user.core.metrics import render, CONTENT_TYPE_LATEST
+    except ImportError:
+        from core.metrics import render, CONTENT_TYPE_LATEST
     return Response(content=render(), media_type=CONTENT_TYPE_LATEST)
 
 

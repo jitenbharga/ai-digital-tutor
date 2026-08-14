@@ -4,11 +4,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-uri = os.getenv("MONGODB_URI")
-db_name = os.getenv("DB_NAME")
-
-if not uri or not db_name:
-    raise ValueError("MONGODB_URI and DB_NAME must be set in environment")
+uri = os.getenv("MONGODB_URI") or os.getenv("MONGO_URI") or "mongodb://localhost:27017/digital_tutor"
+db_name = os.getenv("DB_NAME") or "digital_tutor"
 
 client = AsyncIOMotorClient(uri, serverSelectionTimeoutMS=5000)
 db = client[db_name]

@@ -21,5 +21,8 @@ dependencies = [
     "httpx>=0.26.0"
 ]
 
+[tool.setuptools]
+packages = ["api", "backend"]
+
 [tool.vercel]
 entrypoint = "api.index:handler"

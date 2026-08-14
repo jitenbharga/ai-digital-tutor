@@ -1,22 +1,13 @@
 {
   "version": 2,
-  "builds": [
+  "rewrites": [
     {
-      "src": "user/serve.py",
-      "use": "@vercel/python",
-      "config": { "maxLambdaSize": "50mb", "runtime": "python3.11" }
+      "source": "/(.*)",
+      "destination": "/api/index.py"
     }
-  ],
-  "routes": [
-    { "src": "/(.*)", "dest": "user/serve.py" }
   ],
   "env": {
     "ENVIRONMENT": "production",
     "PYTHONPATH": "."
-  },
-  "functions": {
-    "user/serve.py": {
-      "maxDuration": 30
-    }
   }
 }

@@ -179,13 +179,13 @@ app.add_middleware(
     allow_credentials=True,
 )
 class VercelPathMiddleware(BaseHTTPMiddleware):
-    """Normalize Vercel Serverless Function rewritten paths (e.g. /api/index.py -> /)."""
+    """Normalize Vercel Serverless Function rewritten paths (e.g. /api/index -> /)."""
 
     async def dispatch(self, request: Request, call_next):
         path = request.scope.get("path", "")
-        if path in ("/api/index.py", "/api/index"):
+        if path in ("/api/index.py", "/api/index", "/api"):
             matched_path = request.headers.get("x-matched-path", "/")
-            if matched_path in ("/api/index.py", "/api/index"):
+            if matched_path in ("/api/index.py", "/api/index", "/api"):
                 matched_path = "/"
             request.scope["path"] = matched_path
         return await call_next(request)

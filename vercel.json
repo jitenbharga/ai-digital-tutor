@@ -1,6 +1,12 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "version": 2,
+  "rewrites": [
+    {
+      "source": "/:path*",
+      "destination": "/api/index"
+    }
+  ],
   "env": {
     "ENVIRONMENT": "production",
     "PYTHONPATH": "."

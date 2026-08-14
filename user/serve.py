@@ -178,20 +178,25 @@ app.add_middleware(
     allow_headers=["Authorization", "Content-Type", "X-Request-ID"],
     allow_credentials=True,
 )
-class VercelPathMiddleware(BaseHTTPMiddleware):
-    """Normalize Vercel Serverless Function rewritten paths (e.g. /api/index -> /)."""
-
+class ASGIDiagnosticMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
-        path = request.scope.get("path", "")
-        if path in ("/api/index.py", "/api/index", "/api"):
-            matched_path = request.headers.get("x-matched-path", "/")
-            if matched_path in ("/api/index.py", "/api/index", "/api"):
-                matched_path = "/"
-            request.scope["path"] = matched_path
+        headers = dict(request.headers)
+        logger.info(
+            "ASGI_DIAGNOSTIC scope_path=%s scope_raw_path=%s scope_root_path=%s method=%s "
+            "x_matched_path=%s x_forwarded_host=%s x_vercel_id=%s host=%s",
+            request.scope.get("path"),
+            request.scope.get("raw_path"),
+            request.scope.get("root_path"),
+            request.method,
+            headers.get("x-matched-path"),
+            headers.get("x-forwarded-host"),
+            headers.get("x-vercel-id"),
+            headers.get("host"),
+        )
         return await call_next(request)
 
 
-app.add_middleware(VercelPathMiddleware)
+app.add_middleware(ASGIDiagnosticMiddleware)
 app.add_middleware(RequestIDMiddleware)
 app.add_middleware(SecurityHeadersMiddleware)
 app.add_middleware(MetricsMiddleware)

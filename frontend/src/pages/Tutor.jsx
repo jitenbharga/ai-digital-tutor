@@ -40,6 +40,23 @@ export default function Tutor() {
   const [chatId, setChatId] = useState(navChatId);
   // Header actions collapsed into a standard 3-dot (kebab) overflow menu
   const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setMenuOpen(false);
+      }
+    };
+    if (menuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('touchstart', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, [menuOpen]);
   const [chatsRefresh, setChatsRefresh] = useState(0);
   const [messages, setMessages] = useState([]);
   const [answer, setAnswer] = useState('');
@@ -554,7 +571,7 @@ export default function Tutor() {
           <p className="text-xs text-ink-muted truncate">Adaptive AI tutoring session</p>
         </div>
         {/* All session actions collapsed into a standard 3-dot overflow menu */}
-        <div className="ml-auto relative flex-shrink-0">
+        <div className="ml-auto relative flex-shrink-0 z-50" ref={menuRef}>
           <button
             onClick={() => setMenuOpen(o => !o)}
             className="p-2 rounded-lg text-ink-muted hover:bg-white/10 hover:text-ink-soft transition-colors cursor-pointer"
@@ -564,41 +581,49 @@ export default function Tutor() {
             <MoreVertical size={20} />
           </button>
           {menuOpen && (
-            <>
-              {/* click-outside catcher */}
-              <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} aria-hidden="true" />
-              <div className="absolute right-0 top-full mt-1 z-50 w-56 rounded-xl border shadow-xl py-1 animate-fade-in menu-opaque" style={{ borderColor: 'var(--bd)' }}>
-                <button
-                  onClick={() => setUseStreaming(!useStreaming)}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-ink-soft hover:bg-white/5 transition-colors cursor-pointer"
-                >
-                  <Zap size={16} className={useStreaming ? 'text-green-600' : 'text-ink-faint'} />
-                  <span className="flex-1 text-left">Streaming</span>
-                  <span className={`text-xs font-semibold ${useStreaming ? 'text-green-600' : 'text-ink-faint'}`}>{useStreaming ? 'On' : 'Off'}</span>
-                </button>
-                <button onClick={() => { setMenuOpen(false); handleStartQuiz(); }} disabled={quizLoading || quizMode}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-ink-soft hover:bg-white/5 disabled:opacity-50 transition-colors cursor-pointer">
-                  <ClipboardList size={16} className="text-ink-faint" />
-                  <span className="flex-1 text-left">{quizLoading ? 'Generating…' : 'Take Quiz'}</span>
-                </button>
-                <button onClick={() => { setMenuOpen(false); handleRecap(); }} disabled={recapLoading}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-ink-soft hover:bg-white/5 disabled:opacity-50 transition-colors cursor-pointer">
-                  <Zap size={16} className="text-ink-faint" />
-                  <span className="flex-1 text-left">{recapLoading ? 'Loading…' : '60-second Recap'}</span>
-                </button>
-                <button onClick={() => { setMenuOpen(false); handleDiagnose(); }} disabled={diagnoseLoading}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-ink-soft hover:bg-white/5 disabled:opacity-50 transition-colors cursor-pointer">
-                  <HelpCircle size={16} className="text-ink-faint" />
-                  <span className="flex-1 text-left">{diagnoseLoading ? 'Checking…' : 'Why am I stuck?'}</span>
-                </button>
-                <div className="my-1 border-t" style={{ borderColor: 'var(--bd2)' }} />
-                <button onClick={() => { setMenuOpen(false); handleNewChat(); }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-ink-soft hover:bg-white/5 transition-colors cursor-pointer">
-                  <RefreshCw size={16} className="text-ink-faint" />
-                  <span className="flex-1 text-left">New Chat</span>
-                </button>
-              </div>
-            </>
+            <div className="absolute right-0 top-full mt-1 z-50 w-56 rounded-xl border shadow-xl py-1 animate-fade-in menu-opaque" style={{ borderColor: 'var(--bd)' }}>
+              <button
+                onClick={() => setUseStreaming(!useStreaming)}
+                className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-ink-soft hover:bg-white/5 transition-colors cursor-pointer"
+              >
+                <Zap size={16} className={useStreaming ? 'text-green-600' : 'text-ink-faint'} />
+                <span className="flex-1 text-left">Streaming</span>
+                <span className={`text-xs font-semibold ${useStreaming ? 'text-green-600' : 'text-ink-faint'}`}>{useStreaming ? 'On' : 'Off'}</span>
+              </button>
+              <button
+                onClick={() => { handleStartQuiz(); setMenuOpen(false); }}
+                disabled={quizLoading || quizMode}
+                title={quizMode ? "Quiz in progress" : ""}
+                className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-ink-soft hover:bg-white/5 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+              >
+                <ClipboardList size={16} className="text-ink-faint" />
+                <span className="flex-1 text-left">{quizLoading ? 'Generating…' : quizMode ? 'Quiz in progress' : 'Take Quiz'}</span>
+              </button>
+              <button
+                onClick={() => { handleRecap(); setMenuOpen(false); }}
+                disabled={recapLoading}
+                className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-ink-soft hover:bg-white/5 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+              >
+                <Zap size={16} className="text-ink-faint" />
+                <span className="flex-1 text-left">{recapLoading ? 'Loading…' : '60-second Recap'}</span>
+              </button>
+              <button
+                onClick={() => { handleDiagnose(); setMenuOpen(false); }}
+                disabled={diagnoseLoading}
+                className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-ink-soft hover:bg-white/5 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+              >
+                <HelpCircle size={16} className="text-ink-faint" />
+                <span className="flex-1 text-left">{diagnoseLoading ? 'Checking…' : 'Why am I stuck?'}</span>
+              </button>
+              <div className="my-1 border-t" style={{ borderColor: 'var(--bd2)' }} />
+              <button
+                onClick={() => { handleNewChat(); setMenuOpen(false); }}
+                className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-ink-soft hover:bg-white/5 transition-colors cursor-pointer"
+              >
+                <RefreshCw size={16} className="text-ink-faint" />
+                <span className="flex-1 text-left">New Chat</span>
+              </button>
+            </div>
           )}
         </div>
       </div>

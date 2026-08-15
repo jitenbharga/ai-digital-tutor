@@ -73,7 +73,8 @@ export default function MyPath() {
         <button
           type="submit"
           disabled={setting || !goalInput.trim()}
-          className="px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-lg font-medium disabled:opacity-50 transition-colors"
+          className="px-4 py-2 text-[#201a0e] rounded-lg font-medium disabled:opacity-50 transition-all hover:-translate-y-px"
+          style={{ background: 'linear-gradient(180deg,#ecd9a8,#cfa654)' }}
         >
           {setting ? 'Building...' : path?.goal ? 'Change Goal' : 'Set Goal'}
         </button>
@@ -148,11 +149,12 @@ export default function MyPath() {
                       {(node.state === 'current' || node.state === 'unlocked') && (
                         <button
                           onClick={() => handleStartTopic(node.topic)}
-                          className={`px-3 py-1 text-sm rounded-md font-medium transition-colors ${
+                          className={`px-3 py-1 text-sm rounded-md font-medium transition-all ${
                             node.state === 'current'
-                              ? 'bg-brand-600 hover:bg-brand-500 text-white'
+                              ? 'text-[#201a0e] hover:-translate-y-px'
                               : 'bg-gray-700 hover:bg-gray-600 text-gray-200'
                           }`}
+                          style={node.state === 'current' ? { background: 'linear-gradient(180deg,#ecd9a8,#cfa654)' } : undefined}
                         >
                           {node.state === 'current' ? 'Start' : 'Study'}
                         </button>

@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { api } from '../lib/api';
 import { sendEmailFrontend } from '../lib/emailService';
 import { Eye, EyeOff } from 'lucide-react';
-import Logo from '../components/Logo';
+import AuthShell from '../components/AuthShell';
 import GoogleButton from '../components/GoogleButton';
 
 export default function Login() {
@@ -76,36 +76,34 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-brand-50 to-indigo-50 px-4">
-      <div className="card w-full max-w-md">
-        <div className="text-center mb-8">
-          <div className="inline-flex mb-4"><Logo size={56} className="rounded-2xl" /></div>
-          <h2 className="text-2xl font-bold text-gray-900">Welcome back</h2>
-          <p className="text-gray-500 mt-1">Sign in to continue learning</p>
-        </div>
-
+    <AuthShell>
+      <div>
+        <h2 className="font-display text-3xl font-medium tracking-tight text-ink">Welcome back</h2>
+        <p className="text-[15px] text-ink-muted mt-1.5">Sign in to continue learning</p>
+      </div>
+      <div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="login-email" className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <label htmlFor="login-email" className="block text-sm font-medium text-ink-soft mb-1.5">Email</label>
             <input id="login-email" type="email" autoComplete="email" className="input-field" value={email} onChange={e => setEmail(e.target.value)} required autoFocus />
           </div>
           <div>
-            <label htmlFor="login-password" className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+            <label htmlFor="login-password" className="block text-sm font-medium text-ink-soft mb-1.5">Password</label>
             <div className="relative">
               <input id="login-password" className="input-field pr-10" type={showPw ? 'text' : 'password'} autoComplete="current-password" value={password} onChange={e => setPassword(e.target.value)} required />
-              <button type="button" aria-label={showPw ? 'Hide password' : 'Show password'} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600" onClick={() => setShowPw(!showPw)}>
+              <button type="button" aria-label={showPw ? 'Hide password' : 'Show password'} className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-faint hover:text-ink-soft" onClick={() => setShowPw(!showPw)}>
                 {showPw ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
           </div>
 
-          {error && <p className="text-red-600 text-sm bg-red-50 p-3 rounded-lg">{error}</p>}
+          {error && <p className="text-red-600 text-sm bg-red-50 p-3 rounded-xl border border-red-200">{error}</p>}
           {needVerify && (
-            <button type="button" onClick={resend} className="w-full text-sm font-medium text-brand-700 bg-brand-50 hover:bg-brand-100 rounded-lg py-2 transition-colors">
+            <button type="button" onClick={resend} className="w-full text-sm font-medium text-brand-700 bg-brand-50 hover:bg-brand-100 rounded-xl py-2.5 transition-colors">
               Resend verification email
             </button>
           )}
-          {resendMsg && <p className="text-green-700 text-sm bg-green-50 p-3 rounded-lg">{resendMsg}</p>}
+          {resendMsg && <p className="text-green-700 text-sm bg-green-50 p-3 rounded-xl border border-green-200">{resendMsg}</p>}
           {resendLink && (
             <a href={resendLink} className="block text-sm font-medium text-brand-700 underline mt-2 break-all">
               Open verification link directly
@@ -118,20 +116,20 @@ export default function Login() {
         </form>
 
         <div className="flex items-center gap-3 my-5">
-          <div className="flex-1 h-px bg-gray-200" />
-          <span className="text-xs text-gray-400">or</span>
-          <div className="flex-1 h-px bg-gray-200" />
+          <div className="flex-1 h-px" style={{ background: 'var(--bd)' }} />
+          <span className="text-xs text-ink-faint">or</span>
+          <div className="flex-1 h-px" style={{ background: 'var(--bd)' }} />
         </div>
         <GoogleButton onSuccess={onGoogle} onError={setError} />
 
-        <p className="text-center text-sm text-gray-500 mt-6">
-          <Link to="/forgot-password" className="text-brand-600 hover:text-brand-700 font-medium">Forgot password?</Link>
+        <p className="text-center text-sm text-ink-muted mt-6">
+          <Link to="/forgot-password" className="text-brand-700 hover:text-brand-800 font-medium">Forgot password?</Link>
         </p>
-        <p className="text-center text-sm text-gray-500 mt-2">
+        <p className="text-center text-sm text-ink-muted mt-2">
           Don't have an account?{' '}
-          <Link to="/signup" className="text-brand-600 hover:text-brand-700 font-medium">Sign up</Link>
+          <Link to="/signup" className="text-brand-700 hover:text-brand-800 font-medium">Sign up</Link>
         </p>
       </div>
-    </div>
+    </AuthShell>
   );
 }

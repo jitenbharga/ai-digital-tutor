@@ -1,196 +1,258 @@
+import { lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Logo from '../components/Logo';
+import Reveal from '../components/motion/Reveal';
+import Stagger from '../components/motion/Stagger';
 
-const CSS = `
-@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap');
-.lp{--bg:#07080c;--ink:#f4f5f9;--mut:#98a0b4;--mut2:#6b7285;--line:rgba(255,255,255,.10);
-  --b1:#818cf8;--b2:#a78bfa;
-  --glass:rgba(255,255,255,.055);--glass-str:rgba(255,255,255,.09);--glass-brd:rgba(255,255,255,.12);
-  font-family:'Inter',system-ui,sans-serif;color:var(--ink);background:var(--bg);min-height:100vh;overflow-x:hidden}
-.lp *{box-sizing:border-box;margin:0;padding:0}
-.lp a{color:inherit;text-decoration:none}
-/* Override the app's global dark h1-h4 color for the dark landing */
-.lp h1,.lp h2,.lp h3,.lp h4{color:var(--ink)}
-.lp-bg{position:fixed;inset:0;z-index:0;pointer-events:none;
-  background:
-   radial-gradient(1000px 640px at 50% -16%, rgba(129,140,248,.30), transparent 60%),
-   radial-gradient(780px 560px at 86% 6%, rgba(167,139,250,.20), transparent 58%),
-   radial-gradient(760px 640px at 6% 34%, rgba(56,189,248,.12), transparent 60%),
-   radial-gradient(700px 560px at 92% 88%, rgba(129,140,248,.12), transparent 60%),
-   linear-gradient(180deg,#080a12,#06070c 70%)}
-.lp-wrap{position:relative;z-index:1;max-width:1080px;margin:0 auto;padding:0 28px}
-
-/* Glass sticky nav */
-.lp-nav{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;
-  padding:16px 22px;margin:14px auto 0;max-width:1040px;border-radius:18px;
-  background:var(--glass);border:1px solid var(--glass-brd);
-  backdrop-filter:blur(20px) saturate(150%);-webkit-backdrop-filter:blur(20px) saturate(150%);
-  box-shadow:0 10px 40px -18px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.08)}
-.lp-logo{display:flex;align-items:center;gap:11px;font-weight:700;font-size:19px;letter-spacing:-.01em}
-.lp-logo .m{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;color:#fff;font-size:17px;
-  background:linear-gradient(135deg,var(--b1),var(--b2))}
-.lp-navlinks{display:flex;align-items:center;gap:30px}
-.lp-navlinks a{color:var(--mut);font-size:14.5px;font-weight:450;transition:color .18s}
-.lp-navlinks a:hover{color:var(--ink)}
-.lp-nav-cta{display:flex;align-items:center;gap:14px}
-.lp-ghost{color:var(--mut);font-weight:500;font-size:14.5px;padding:8px 4px;transition:color .18s;cursor:pointer;background:none;border:0;font-family:inherit}
-.lp-ghost:hover{color:var(--ink)}
-/* Glass buttons */
-.lp-btn{cursor:pointer;font-family:inherit;font-weight:600;font-size:14.5px;padding:11px 20px;border-radius:12px;
-  color:var(--ink);background:var(--glass-str);border:1px solid var(--glass-brd);
-  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
-  transition:transform .14s,background .2s,border-color .2s,box-shadow .25s;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.12)}
-.lp-btn:hover{transform:translateY(-1px);background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.22)}
-.lp-btn.big{font-size:15.5px;padding:15px 30px;border-radius:14px}
-/* Primary = brighter frosted with brand tint */
-.lp-btn.primary{color:#0b0c12;background:linear-gradient(180deg,rgba(255,255,255,.96),rgba(255,255,255,.82));border-color:rgba(255,255,255,.5)}
-.lp-btn.primary:hover{background:#fff;box-shadow:0 16px 44px -16px rgba(199,205,247,.5)}
-
-.lp-hero{text-align:center;padding:104px 0 60px}
-.lp-badge{display:inline-flex;align-items:center;gap:9px;font-size:13px;font-weight:500;color:#d6dafb;
-  background:var(--glass);border:1px solid var(--glass-brd);padding:7px 16px;border-radius:999px;margin-bottom:38px;
-  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:inset 0 1px 0 rgba(255,255,255,.1)}
-.lp-badge .dot{width:6px;height:6px;border-radius:50%;background:#a78bfa;box-shadow:0 0 12px #a78bfa}
-.lp-h1{font-family:'Instrument Serif',Georgia,serif;font-weight:400;font-size:clamp(48px,8.4vw,90px);line-height:1.02;letter-spacing:-.005em}
-.lp-h1 em{font-style:italic;background:linear-gradient(110deg,#c7d2fe,#a78bfa 55%,#818cf8);-webkit-background-clip:text;background-clip:text;color:transparent}
-.lp-sub{max-width:600px;margin:30px auto 0;font-size:clamp(16px,1.8vw,19px);line-height:1.65;color:var(--mut);font-weight:400}
-.lp-cta{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:42px}
-.lp-note{margin-top:20px;font-size:13px;color:var(--mut2)}
-.lp-strip{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:56px 0 0}
-.lp-chip{font-size:13px;font-weight:450;color:#c3c9db;background:var(--glass);border:1px solid var(--glass-brd);padding:8px 15px;border-radius:999px;
-  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
-
-.lp-sec{padding:100px 0 0;text-align:center}
-.lp-eyebrow{font-size:12.5px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:#98a0b4}
-.lp-h2{font-family:'Instrument Serif',Georgia,serif;font-weight:400;font-size:clamp(32px,4.4vw,50px);letter-spacing:-.005em;margin-top:14px}
-.lp-h2-sub{max-width:540px;margin:18px auto 0;color:var(--mut);font-size:16px;line-height:1.65}
-.lp-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:56px;text-align:left}
-/* Frosted glass cards */
-.lp-card{background:var(--glass);border:1px solid var(--glass-brd);border-radius:20px;padding:26px;
-  backdrop-filter:blur(20px) saturate(140%);-webkit-backdrop-filter:blur(20px) saturate(140%);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.08), 0 20px 50px -30px rgba(0,0,0,.7);
-  transition:transform .25s,border-color .25s,background .25s}
-.lp-card:hover{transform:translateY(-4px);border-color:rgba(129,140,248,.4);background:var(--glass-str)}
-.lp-card .ic{width:40px;height:40px;border-radius:11px;display:grid;place-items:center;font-size:19px;margin-bottom:18px;
-  color:#d6dafb;background:rgba(255,255,255,.08);border:1px solid var(--glass-brd)}
-.lp-card h3{font-size:16.5px;font-weight:600;letter-spacing:-.01em}
-.lp-card p{margin-top:9px;font-size:14px;line-height:1.65;color:var(--mut)}
-
-.lp-final{margin:112px 0 92px;padding:66px 32px;text-align:center;border-radius:28px;position:relative;overflow:hidden;
-  background:var(--glass);border:1px solid var(--glass-brd);
-  backdrop-filter:blur(26px) saturate(150%);-webkit-backdrop-filter:blur(26px) saturate(150%);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.1), 0 30px 80px -40px rgba(0,0,0,.8)}
-.lp-final h2{font-family:'Instrument Serif',Georgia,serif;font-weight:400;font-size:clamp(30px,4vw,46px);letter-spacing:-.005em}
-.lp-final p{margin-top:14px;color:var(--mut);font-size:16.5px}
-.lp-final .lp-cta{margin-top:34px}
-
-.lp-foot{border-top:1px solid var(--line);padding:32px 0 56px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px}
-.lp-foot .c{color:var(--mut2);font-size:13px}
-.lp-foot .lks{display:flex;gap:24px}.lp-foot .lks a{color:var(--mut);font-size:13px;cursor:pointer}.lp-foot .lks a:hover{color:var(--ink)}
-
-@media(max-width:760px){
-  .lp-navlinks{display:none}
-  .lp-cards{grid-template-columns:1fr}
-  .lp-hero{padding:64px 0 32px}
-  .lp-sec{padding:76px 0 0}
-}
-`;
+const LearningCore = lazy(() => import('../components/3d/LearningCore'));
 
 const FEATURES = [
-  { ic: '◎', t: 'Adaptive AI tutoring', d: 'Lessons that read your level and move between direct teaching and Socratic questioning as you go.' },
-  { ic: '◈', t: 'Practice your weak spots', d: 'One tap builds a targeted set from the exact questions and concepts you keep getting wrong.' },
-  { ic: '◱', t: 'Exam-ready plans', d: 'A day-by-day plan to your exam date with a live readiness meter, so you always know where you stand.' },
-  { ic: '❖', t: 'Learn by explaining', d: 'Explain a topic back in your own words and get graded — the fastest way to make it stick.' },
-  { ic: '✎', t: 'Step-by-step solver', d: 'Write your working by hand; the tutor checks each step and nudges you the moment you slip.' },
-  { ic: '▤', t: 'Flashcards, offline', d: 'Cards build themselves from your mistakes and sync your reviews even without a connection.' },
+  { glyph: '◉', tint: 'gold', t: 'Adaptive AI tutoring', d: 'Lessons that read your level and move between direct teaching and Socratic questioning as you go.' },
+  { glyph: '◈', tint: 'teal', t: 'Practice your weak spots', d: 'One tap builds a targeted set from the exact questions and concepts you keep getting wrong.' },
+  { glyph: '◱', tint: 'gold', t: 'Exam-ready plans', d: 'A day-by-day plan to your exam date with a live readiness meter, so you always know where you stand.' },
+  { glyph: '❖', tint: 'teal', t: 'Learn by explaining', d: 'Explain a topic back in your own words and get graded — the fastest way to make it stick.' },
+  { glyph: '✎', tint: 'gold', t: 'Step-by-step solver', d: 'Write your working by hand; the tutor checks each step and nudges you the moment you slip.' },
+  { glyph: '▤', tint: 'teal', t: 'Flashcards, offline', d: 'Cards build themselves from your mistakes and sync your reviews even without a connection.' },
 ];
+
+const GLYPH_STYLE = {
+  gold: {
+    box: 'bg-[#d9b86e]/10 border-[#d9b86e]/25 text-[#ecd9a8]',
+    hover: 'hover:border-[#d9b86e]/50',
+  },
+  teal: {
+    box: 'bg-[#5fd9ce]/10 border-[#5fd9ce]/25 text-[#7fe3da]',
+    hover: 'hover:border-[#5fd9ce]/45',
+  },
+};
+
+function HeroScene() {
+  return (
+    <div className="relative w-full h-[320px] sm:h-[400px] lg:h-[560px]" aria-hidden="true">
+      {/* Suspense fallback: quiet static glow while the WebGL module loads */}
+      <Suspense fallback={
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="w-56 h-56 rounded-full opacity-60"
+            style={{ background: 'radial-gradient(closest-side, rgba(217,184,110,.18), transparent 70%)' }} />
+        </div>
+      }>
+        <LearningCore className="absolute inset-0" />
+      </Suspense>
+      {/* Soft grounding glow behind the core */}
+      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[420px] h-[420px] rounded-full pointer-events-none"
+        style={{ background: 'radial-gradient(closest-side, rgba(217,184,110,.07), transparent 68%)' }} />
+    </div>
+  );
+}
 
 export default function Landing() {
   const navigate = useNavigate();
+
   return (
-    <div className="lp">
-      <style>{CSS}</style>
-      <div className="lp-bg" />
+    <div className="relative min-h-screen overflow-x-hidden font-sans text-[#eef1f6]" style={{ background: '#070a10' }}>
+      {/* Atmospheric background */}
+      <div className="fixed inset-0 pointer-events-none"
+        style={{
+          background:
+            'radial-gradient(1000px 640px at 50% -16%, rgba(217,184,110,.13), transparent 60%),' +
+            'radial-gradient(760px 560px at 88% 6%, rgba(95,217,206,.07), transparent 58%),' +
+            'radial-gradient(760px 640px at 4% 36%, rgba(185,140,63,.06), transparent 60%),' +
+            'linear-gradient(180deg,#080b12,#06080e 70%)',
+        }}
+      />
+      <div className="fixed inset-0 pointer-events-none bg-grid-ink opacity-[0.35]" style={{
+        maskImage: 'radial-gradient(ellipse 90% 70% at 50% 0%, black, transparent 75%)',
+        WebkitMaskImage: 'radial-gradient(ellipse 90% 70% at 50% 0%, black, transparent 75%)',
+      }} />
 
-      <nav className="lp-nav">
-        <div className="lp-logo"><Logo size={32} /> AI Tutor</div>
-        <div className="lp-navlinks">
-          <a href="#features">Features</a>
-          <a href="#how">How it works</a>
-          <a href="#start">Get started</a>
-        </div>
-        <div className="lp-nav-cta">
-          <button className="lp-ghost" onClick={() => navigate('/login')}>Sign in</button>
-          <button className="lp-btn primary" onClick={() => navigate('/signup')}>Get started</button>
-        </div>
-      </nav>
-
-      <div className="lp-wrap">
-        <section className="lp-hero">
-          <div className="lp-badge"><span className="dot" /> Your personal AI tutor</div>
-          <h1 className="lp-h1">Learn anything.<br /><em>Master it faster.</em></h1>
-          <p className="lp-sub">
-            Adaptive lessons, practice built from your own mistakes, and exam-ready plans —
-            an AI tutor that teaches the way you learn best.
-          </p>
-          <div className="lp-cta" id="start">
-            <button className="lp-btn big primary" onClick={() => navigate('/signup')}>Start learning free</button>
-            <button className="lp-btn big" onClick={() => navigate('/login')}>Sign in</button>
-          </div>
-          <p className="lp-note">No credit card · set up in under a minute</p>
-
-          <div className="lp-strip">
-            <span className="lp-chip">Maths</span>
-            <span className="lp-chip">Physics</span>
-            <span className="lp-chip">Computer Science</span>
-            <span className="lp-chip">Chemistry</span>
-            <span className="lp-chip">Biology</span>
-            <span className="lp-chip">Statistics</span>
-          </div>
-        </section>
-
-        <section className="lp-sec" id="features">
-          <div className="lp-eyebrow">Everything in one place</div>
-          <h2 className="lp-h2">A tutor that adapts to you</h2>
-          <p className="lp-h2-sub">Not another video library — a study partner that watches how you learn and meets you there.</p>
-          <div className="lp-cards">
-            {FEATURES.map((f, i) => (
-              <div className="lp-card" key={i}>
-                <div className="ic">{f.ic}</div>
-                <h3>{f.t}</h3>
-                <p>{f.d}</p>
+      <div className="relative z-10">
+        {/* Sticky glass nav */}
+        <nav className="sticky top-0 z-20">
+          <div className="mx-auto max-w-6xl px-5 sm:px-8 pt-4">
+            <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.045] px-4 sm:px-6 py-3 backdrop-blur-xl"
+              style={{ boxShadow: 'inset 0 1px 0 rgba(255,255,255,.07), 0 14px 44px -22px rgba(0,0,0,.8)' }}>
+              <button className="flex items-center gap-2.5 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+                <Logo size={34} />
+                <span className="font-display text-xl font-medium tracking-tight text-[#f2f4f8]">AI Tutor</span>
+              </button>
+              <div className="hidden md:flex items-center gap-8 text-sm text-[#98a2b8]">
+                <a href="#features" className="hover:text-[#eef1f6] transition-colors">Features</a>
+                <a href="#how" className="hover:text-[#eef1f6] transition-colors">How it works</a>
+                <a href="#start" className="hover:text-[#eef1f6] transition-colors">Get started</a>
               </div>
-            ))}
+              <div className="flex items-center gap-3">
+                <button onClick={() => navigate('/login')} className="text-sm font-medium text-[#aab4c4] hover:text-[#eef1f6] transition-colors px-2 py-1.5 cursor-pointer">
+                  Sign in
+                </button>
+                <button onClick={() => navigate('/signup')}
+                  className="text-sm font-semibold rounded-xl px-4 py-2 text-[#201a0e] cursor-pointer transition-all duration-150 hover:-translate-y-px"
+                  style={{ background: 'linear-gradient(180deg,#ecd9a8,#cfa654)', boxShadow: '0 10px 28px -12px rgba(217,184,110,.5)' }}>
+                  Get started
+                </button>
+              </div>
+            </div>
           </div>
-        </section>
+        </nav>
 
-        <section className="lp-sec" id="how">
-          <div className="lp-eyebrow">How it works</div>
-          <h2 className="lp-h2">Three steps to your first win</h2>
-          <div className="lp-cards">
-            <div className="lp-card"><div className="ic">1</div><h3>Tell us your goal</h3><p>Pick a subject or an exam date. A quick placement finds your level.</p></div>
-            <div className="lp-card"><div className="ic">2</div><h3>Learn &amp; practice</h3><p>Adaptive lessons, quizzes, and a plan that targets your weak spots.</p></div>
-            <div className="lp-card"><div className="ic">3</div><h3>Track your mastery</h3><p>Watch topics turn green and stay exam-ready with spaced review.</p></div>
-          </div>
-        </section>
+        <div className="mx-auto max-w-6xl px-5 sm:px-8">
+          {/* Hero */}
+          <section className="grid lg:grid-cols-[1.05fr_1fr] gap-6 lg:gap-2 items-center pt-10 sm:pt-16 lg:pt-10 pb-6" id="start">
+            <div className="text-center lg:text-left">
+              <Reveal>
+                <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-3.5 py-1.5 text-[13px] font-medium text-[#d6c9a8] backdrop-blur-md">
+                  <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#d9b86e', boxShadow: '0 0 10px #d9b86e' }} />
+                  Your personal AI tutor
+                </div>
+              </Reveal>
 
-        <section className="lp-final">
-          <h2>Ready to learn smarter?</h2>
-          <p>Join and get your personalised study plan today.</p>
-          <div className="lp-cta">
-            <button className="lp-btn big primary" onClick={() => navigate('/signup')}>Create free account</button>
-            <button className="lp-btn big" onClick={() => navigate('/login')}>Sign in</button>
-          </div>
-        </section>
+              <Reveal delay={0.08}>
+                <h1 className="font-display text-[44px] leading-[1.04] sm:text-6xl lg:text-[72px] font-medium tracking-tight text-[#f2f4f8] mt-7">
+                  Learn anything.
+                  <br />
+                  <em className="italic font-normal"
+                    style={{ background: 'linear-gradient(105deg,#ecd9a8,#cfa654 60%,#b98c3f)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' }}>
+                    Master it faster.
+                  </em>
+                </h1>
+              </Reveal>
 
-        <footer className="lp-foot">
-          <div className="c">© {new Date().getFullYear()} AI Tutor</div>
-          <div className="lks">
-            <a onClick={() => navigate('/login')}>Sign in</a>
-            <a onClick={() => navigate('/signup')}>Get started</a>
-          </div>
-        </footer>
+              <Reveal delay={0.16}>
+                <p className="mt-6 text-[17px] sm:text-lg leading-relaxed text-[#98a2b8] max-w-[540px] mx-auto lg:mx-0">
+                  Adaptive lessons, practice built from your own mistakes, and exam-ready plans —
+                  an AI tutor that teaches the way you learn best.
+                </p>
+              </Reveal>
+
+              <Reveal delay={0.24}>
+                <div className="mt-9 flex flex-wrap gap-3.5 justify-center lg:justify-start">
+                  <button onClick={() => navigate('/signup')}
+                    className="rounded-2xl px-7 py-3.5 text-[15.5px] font-semibold text-[#201a0e] cursor-pointer transition-all duration-150 hover:-translate-y-0.5 active:scale-[0.98]"
+                    style={{ background: 'linear-gradient(180deg,#ecd9a8,#cfa654)', boxShadow: '0 16px 44px -14px rgba(217,184,110,.55)' }}>
+                    Start learning free
+                  </button>
+                  <button onClick={() => navigate('/login')}
+                    className="rounded-2xl px-7 py-3.5 text-[15.5px] font-semibold text-[#eef1f6] cursor-pointer transition-all duration-150 hover:-translate-y-0.5 active:scale-[0.98] border border-white/12 bg-white/[0.06] backdrop-blur-md hover:bg-white/[0.1]"
+                    style={{ boxShadow: 'inset 0 1px 0 rgba(255,255,255,.09)' }}>
+                    Sign in
+                  </button>
+                </div>
+                <p className="mt-4 text-[13px] text-[#5d6979]">No credit card · set up in under a minute</p>
+              </Reveal>
+
+              <Reveal delay={0.32}>
+                <div className="mt-8 flex flex-wrap gap-2 justify-center lg:justify-start">
+                  {['Maths', 'Physics', 'Computer Science', 'Chemistry', 'Biology', 'Statistics'].map((s) => (
+                    <span key={s} className="rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-1.5 text-[13px] text-[#b7c0cf] backdrop-blur-sm">
+                      {s}
+                    </span>
+                  ))}
+                </div>
+              </Reveal>
+            </div>
+
+            {/* Signature 3D hero — the Learning Core */}
+            <Reveal delay={0.2} y={26}>
+              <HeroScene />
+            </Reveal>
+          </section>
+
+          {/* Features */}
+          <section className="pt-20 sm:pt-24 pb-4" id="features">
+            <Reveal className="text-center">
+              <p className="text-[12.5px] font-semibold tracking-[0.14em] uppercase text-[#8b96a9]">Everything in one place</p>
+              <h2 className="font-display text-4xl sm:text-[44px] font-medium tracking-tight text-[#f2f4f8] mt-3">
+                A tutor that adapts to you
+              </h2>
+              <p className="mt-4 text-[16px] text-[#98a2b8] max-w-[540px] mx-auto">
+                Not another video library — a study partner that watches how you learn and meets you there.
+              </p>
+            </Reveal>
+
+            <Stagger className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 mt-14" gap={0.08}>
+              {FEATURES.map((f) => {
+                const s = GLYPH_STYLE[f.tint];
+                return (
+                  <Stagger.Item key={f.t}>
+                    <div className={`group h-full rounded-3xl border border-white/10 bg-white/[0.045] p-7 backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 ${s.hover}`}
+                      style={{ boxShadow: 'inset 0 1px 0 rgba(255,255,255,.06), 0 24px 56px -34px rgba(0,0,0,.8)' }}>
+                      <div className={`w-11 h-11 rounded-xl border flex items-center justify-center text-lg mb-5 ${s.box}`}>
+                        {f.glyph}
+                      </div>
+                      <h3 className="font-display text-[19px] font-semibold tracking-tight text-[#eef1f6]">{f.t}</h3>
+                      <p className="mt-2.5 text-[14px] leading-relaxed text-[#8b96a9]">{f.d}</p>
+                    </div>
+                  </Stagger.Item>
+                );
+              })}
+            </Stagger>
+          </section>
+
+          {/* How it works */}
+          <section className="pt-20 sm:pt-24 pb-4" id="how">
+            <Reveal className="text-center">
+              <p className="text-[12.5px] font-semibold tracking-[0.14em] uppercase text-[#8b96a9]">How it works</p>
+              <h2 className="font-display text-4xl sm:text-[44px] font-medium tracking-tight text-[#f2f4f8] mt-3">
+                Three steps to your first win
+              </h2>
+            </Reveal>
+
+            <Stagger className="grid md:grid-cols-3 gap-5 mt-14" gap={0.12}>
+              {[
+                { n: '01', t: 'Tell us your goal', d: 'Pick a subject or an exam date. A quick placement finds your level.' },
+                { n: '02', t: 'Learn & practice', d: 'Adaptive lessons, quizzes, and a plan that targets your weak spots.' },
+                { n: '03', t: 'Track your mastery', d: 'Watch topics turn gold and stay exam-ready with spaced review.' },
+              ].map((s) => (
+                <Stagger.Item key={s.n}>
+                  <div className="relative rounded-3xl border border-white/10 bg-white/[0.04] p-7 backdrop-blur-xl h-full"
+                    style={{ boxShadow: 'inset 0 1px 0 rgba(255,255,255,.05)' }}>
+                    <span className="font-display text-[42px] font-medium leading-none"
+                      style={{ background: 'linear-gradient(180deg,#ecd9a8,#8a6d35)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' }}>
+                      {s.n}
+                    </span>
+                    <h3 className="font-display text-[19px] font-semibold tracking-tight text-[#eef1f6] mt-4">{s.t}</h3>
+                    <p className="mt-2.5 text-[14px] leading-relaxed text-[#8b96a9]">{s.d}</p>
+                  </div>
+                </Stagger.Item>
+              ))}
+            </Stagger>
+          </section>
+
+          {/* Final CTA */}
+          <section className="pt-20 sm:pt-24 pb-10">
+            <Reveal>
+              <div className="relative overflow-hidden rounded-[28px] border border-white/10 bg-white/[0.045] px-8 py-14 sm:py-16 text-center backdrop-blur-2xl"
+                style={{ boxShadow: 'inset 0 1px 0 rgba(255,255,255,.08), 0 30px 80px -44px rgba(0,0,0,.85)' }}>
+                <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-[480px] h-[300px] rounded-full pointer-events-none"
+                  style={{ background: 'radial-gradient(closest-side, rgba(217,184,110,.12), transparent 70%)' }} />
+                <h2 className="font-display text-4xl sm:text-[46px] font-medium tracking-tight text-[#f2f4f8] relative">
+                  Ready to learn smarter?
+                </h2>
+                <p className="mt-4 text-[16.5px] text-[#98a2b8] relative">Join and get your personalised study plan today.</p>
+                <div className="mt-9 flex flex-wrap gap-3.5 justify-center relative">
+                  <button onClick={() => navigate('/signup')}
+                    className="rounded-2xl px-7 py-3.5 text-[15.5px] font-semibold text-[#201a0e] cursor-pointer transition-all duration-150 hover:-translate-y-0.5 active:scale-[0.98]"
+                    style={{ background: 'linear-gradient(180deg,#ecd9a8,#cfa654)', boxShadow: '0 16px 44px -14px rgba(217,184,110,.55)' }}>
+                    Create free account
+                  </button>
+                  <button onClick={() => navigate('/login')}
+                    className="rounded-2xl px-7 py-3.5 text-[15.5px] font-semibold text-[#eef1f6] cursor-pointer transition-all duration-150 hover:-translate-y-0.5 border border-white/12 bg-white/[0.06] hover:bg-white/[0.1]"
+                    style={{ boxShadow: 'inset 0 1px 0 rgba(255,255,255,.09)' }}>
+                    Sign in
+                  </button>
+                </div>
+              </div>
+            </Reveal>
+          </section>
+
+          {/* Footer */}
+          <footer className="border-t border-white/[0.07] py-8 mb-6 flex flex-wrap items-center justify-between gap-4">
+            <p className="text-[13px] text-[#5d6979]">© {new Date().getFullYear()} AI Tutor</p>
+            <div className="flex gap-6 text-[13px] text-[#8b96a9]">
+              <button onClick={() => navigate('/login')} className="hover:text-[#eef1f6] transition-colors cursor-pointer">Sign in</button>
+              <button onClick={() => navigate('/signup')} className="hover:text-[#eef1f6] transition-colors cursor-pointer">Get started</button>
+            </div>
+          </footer>
+        </div>
       </div>
     </div>
   );

@@ -130,7 +130,7 @@ export default function Profile() {
         <StatCard icon={<Flame size={18} className="text-accent-500" />} value={p.streak} label="Day streak" />
         <StatCard icon={<Trophy size={18} className="text-brand-500" />} value={`Lv ${p.level}`} label={`${p.xp} XP`} />
         <StatCard icon={<Target size={18} className="text-green-600" />} value={`${p.accuracy}%`} label="Accuracy" />
-        <StatCard icon={<BookOpen size={18} className="text-indigo-500" />} value={p.topics_count} label="Topics" />
+        <StatCard icon={<BookOpen size={18} className="text-brand-500" />} value={p.topics_count} label="Topics" />
       </div>
 
       {/* Account rows */}

@@ -46,7 +46,10 @@ const CheatSheet = lazy(() => import('./pages/CheatSheet'));
 function PageFallback() {
   return (
     <div className="flex items-center justify-center h-screen" role="status" aria-label="Loading">
-      <div className="animate-spin h-8 w-8 border-4 border-brand-500 border-t-transparent rounded-full" />
+      <div className="flex flex-col items-center gap-3">
+        <div className="animate-spin h-8 w-8 border-2 border-brand-500/30 border-t-brand-500 rounded-full" />
+        <p className="text-xs text-ink-muted font-medium">Loading…</p>
+      </div>
     </div>
   );
 }

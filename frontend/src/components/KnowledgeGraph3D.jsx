@@ -34,11 +34,11 @@ export default function KnowledgeGraphViz({ data, width = 500, height = 360 }) {
   }, [data]);
 
   const nodeColor = useCallback((node) => {
-    if (node.isFocus) return '#f59e0b';  // amber for focus
-    if (node.isWeak) return '#ef4444';   // red for weak
-    if (node.mastery > 0.7) return '#22c55e';  // green
-    if (node.mastery > 0.4) return '#3b82f6';  // blue
-    return '#94a3b8';  // gray
+    if (node.isFocus) return '#d9b86e';  // gold for focus
+    if (node.isWeak) return '#f87171';   // coral for weak
+    if (node.mastery > 0.7) return '#34d399';  // emerald
+    if (node.mastery > 0.4) return '#2dd4bf';  // teal
+    return '#7c8a99';  // muted
   }, []);
 
   const nodeSize = useCallback((node) => {
@@ -62,7 +62,7 @@ export default function KnowledgeGraphViz({ data, width = 500, height = 360 }) {
 
     // Glow for focus nodes
     if (node.isFocus) {
-      ctx.strokeStyle = '#f59e0b';
+      ctx.strokeStyle = '#d9b86e';
       ctx.lineWidth = 2 / globalScale;
       ctx.stroke();
     }
@@ -71,19 +71,19 @@ export default function KnowledgeGraphViz({ data, width = 500, height = 360 }) {
     ctx.font = `${fontSize}px sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'top';
-    ctx.fillStyle = '#334155';
+    ctx.fillStyle = '#8b96a9';
     ctx.fillText(node.id, node.x, node.y + size + 2);
   }, [nodeColor, nodeSize]);
 
   const linkColor = useCallback((link) => {
-    if (link.strength === 'strong') return 'rgba(59, 130, 246, 0.6)';
-    if (link.strength === 'weak') return 'rgba(239, 68, 68, 0.4)';
-    return 'rgba(148, 163, 184, 0.4)';
+    if (link.strength === 'strong') return 'rgba(45, 212, 191, 0.55)';
+    if (link.strength === 'weak') return 'rgba(248, 113, 113, 0.4)';
+    return 'rgba(124, 138, 153, 0.35)';
   }, []);
 
   if (!graphData.nodes.length) {
     return (
-      <div className="flex items-center justify-center h-64 text-gray-400 text-sm">
+      <div className="flex items-center justify-center h-64 text-ink-faint text-sm">
         Study more topics to see your knowledge graph
       </div>
     );

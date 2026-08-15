@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { api } from '../lib/api';
 import { sendPasswordResetEmail } from '../lib/emailService';
 import { BookOpen } from 'lucide-react';
+import AuthShell from '../components/AuthShell';
 
 export default function ForgotPassword() {
   const [identifier, setIdentifier] = useState('');
@@ -29,19 +30,18 @@ export default function ForgotPassword() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-brand-50 to-indigo-50 px-4">
-      <div className="card w-full max-w-md">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 bg-brand-100 rounded-xl mb-4">
-            <BookOpen className="text-brand-600" size={28} />
-          </div>
-          <h2 className="text-2xl font-bold text-gray-900">Reset your password</h2>
-          <p className="text-gray-500 mt-1">We&apos;ll email a reset link if an account exists.</p>
+    <AuthShell>
+      <div>
+        <div className="inline-flex items-center justify-center w-14 h-14 bg-brand-50 rounded-xl mb-4">
+          <BookOpen className="text-brand-600" size={28} />
         </div>
-
+        <h2 className="font-display text-3xl font-medium tracking-tight text-ink">Reset your password</h2>
+        <p className="text-ink-muted mt-1.5">We&apos;ll email a reset link if an account exists.</p>
+      </div>
+      <div>
         {sent ? (
           <>
-            <p role="status" className="text-center text-gray-600 bg-green-50 p-4 rounded-lg">
+            <p role="status" className="text-center text-ink-muted bg-green-50 border border-green-200 p-4 rounded-xl">
               If a matching account with an email exists, a reset link has been sent.
               Check your inbox.
             </p>
@@ -54,7 +54,7 @@ export default function ForgotPassword() {
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="fp-identifier" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="fp-identifier" className="block text-sm font-medium text-ink-soft mb-1.5">
                 Username or email
               </label>
               <input
@@ -72,12 +72,12 @@ export default function ForgotPassword() {
           </form>
         )}
 
-        <p className="text-center text-sm text-gray-500 mt-6">
-          <Link to="/login" className="text-brand-600 hover:text-brand-700 font-medium">
+        <p className="text-center text-sm text-ink-muted mt-6">
+          <Link to="/login" className="text-brand-700 hover:text-brand-800 font-medium">
             Back to sign in
           </Link>
         </p>
       </div>
-    </div>
+    </AuthShell>
   );
 }

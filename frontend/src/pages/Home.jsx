@@ -5,11 +5,12 @@ import { api } from '../lib/api';
 import { Flame, ArrowRight, BookOpen, RefreshCw, Trophy, Sparkles, Shield, Swords, Target, CheckCircle2, MessageCircleQuestion, Zap, TrendingUp, NotebookPen, Upload, Brain, Share2, CalendarDays, Camera, FileText, PenLine } from 'lucide-react';
 import { useCelebration } from '../components/CelebrationManager';
 import StudyBuddyCard from '../components/StudyBuddyCard';
+import Stagger from '../components/motion/Stagger';
 
 const TYPE_STYLES = {
-  learn:    { color: 'text-blue-600', bg: 'bg-blue-50', label: 'Learn' },
-  review:   { color: 'text-amber-600', bg: 'bg-amber-50', label: 'Review' },
-  practice: { color: 'text-purple-600', bg: 'bg-purple-50', label: 'Practice' },
+  learn:    { color: 'text-brand-700', bg: 'bg-brand-50', label: 'Learn' },
+  review:   { color: 'text-amber-700', bg: 'bg-amber-50', label: 'Review' },
+  practice: { color: 'text-teal-700', bg: 'bg-teal-50', label: 'Practice' },
 };
 
 const QUEST_DIFF_STYLES = {
@@ -18,14 +19,14 @@ const QUEST_DIFF_STYLES = {
   hard:   { color: 'text-red-600', bg: 'bg-red-50' },
 };
 
-function GoalRing({ done, target, size = 56, color = '#4f46e5' }) {
+function GoalRing({ done, target, size = 56, color = '#b98c3f' }) {
   const pct = Math.min(done / Math.max(target, 1), 1);
   const r = (size - 8) / 2;
   const circ = 2 * Math.PI * r;
   const offset = circ * (1 - pct);
   return (
     <svg width={size} height={size} className="transform -rotate-90">
-      <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="#eef2ff" strokeWidth={6} />
+      <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="var(--bd2)" strokeWidth={6} />
       <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={color}
         strokeWidth={6} strokeLinecap="round"
         strokeDasharray={circ} strokeDashoffset={offset}
@@ -160,17 +161,18 @@ export default function Home() {
   const greet = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
 
   return (
-    <div className="max-w-lg lg:max-w-2xl mx-auto px-4 lg:px-6 py-5 lg:py-8 space-y-4 animate-fade-in">
+    <Stagger className="max-w-lg lg:max-w-2xl mx-auto px-4 lg:px-6 py-5 lg:py-8 space-y-4">
       {/* Greeting */}
-      <div className="flex items-center gap-3">
-        <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-brand-500 to-brand-700 text-white flex items-center justify-center text-lg font-bold shadow-soft flex-shrink-0">
+      <Stagger.Item className="flex items-center gap-3">
+        <div className="w-11 h-11 rounded-2xl flex items-center justify-center text-lg font-bold shadow-soft flex-shrink-0 text-[#201a0e]"
+          style={{ background: 'linear-gradient(180deg,#ecd9a8,#cfa654)' }}>
           {displayName[0]?.toUpperCase()}
         </div>
         <div>
           <p className="text-xs text-ink-muted">{greet},</p>
-          <h2 className="text-xl font-extrabold text-ink leading-tight capitalize">{displayName}</h2>
+          <h2 className="font-display text-2xl font-medium text-ink leading-tight capitalize">{displayName}</h2>
         </div>
-      </div>
+      </Stagger.Item>
 
       {/* Feature #4: Exam countdown card — nearest upcoming exam */}
       {nextExam && (() => {
@@ -179,14 +181,15 @@ export default function Home() {
         const urgent = d <= 3 || (nextExam.behind_by || 0) > 0;
         const soon = d <= 7;
         const theme = urgent
-          ? { ring: 'border-red-200', bg: 'from-red-50 to-orange-50', icon: 'bg-red-600', bar: 'bg-red-500' }
+          ? { ring: 'border-red-200', bg: 'from-red-50/70 to-orange-50/60', icon: 'bg-red-600', bar: 'bg-red-500', text: 'text-red-700' }
           : soon
-          ? { ring: 'border-amber-200', bg: 'from-amber-50 to-yellow-50', icon: 'bg-amber-500', bar: 'bg-amber-500' }
-          : { ring: 'border-brand-200', bg: 'from-brand-50 to-indigo-50', icon: 'bg-brand-600', bar: 'bg-brand-500' };
+          ? { ring: 'border-amber-200', bg: 'from-amber-50/70 to-yellow-50/60', icon: 'bg-amber-500', bar: 'bg-amber-500', text: 'text-amber-700' }
+          : { ring: 'border-brand-200', bg: 'from-brand-50/70 to-yellow-50/40', icon: 'bg-brand-600', bar: 'bg-brand-500', text: 'text-brand-700' };
         return (
+          <Stagger.Item>
           <button
             onClick={() => navigate('/exam-plan')}
-            className={`w-full text-left rounded-2xl border ${theme.ring} bg-gradient-to-br ${theme.bg} p-4 shadow-soft hover:shadow-md transition-shadow`}
+            className={`w-full text-left rounded-2xl border ${theme.ring} bg-gradient-to-br ${theme.bg} p-4 shadow-soft hover:shadow-card transition-shadow cursor-pointer`}
           >
             <div className="flex items-center gap-3">
               <div className={`w-11 h-11 rounded-xl ${theme.icon} text-white flex items-center justify-center flex-shrink-0`}>
@@ -218,10 +221,12 @@ export default function Home() {
               </div>
             </div>
           </button>
+          </Stagger.Item>
         );
       })()}
 
       {/* Compact stats bar — streak · level · goal */}
+      <Stagger.Item>
       <div className="card-tight flex items-stretch divide-x divide-slate-100">
         <div className="flex-1 flex flex-col items-center justify-center gap-0.5 px-1">
           <Flame size={20} className={streakAlive && streak > 0 ? 'text-accent-500' : 'text-slate-300'} />
@@ -238,15 +243,15 @@ export default function Home() {
             <Trophy size={16} className="text-brand-500" />
             <span className="text-lg font-extrabold text-brand-700 leading-none">Lv {level}</span>
           </div>
-          <div className="w-full h-1.5 rounded-full bg-slate-100 overflow-hidden">
-            <div className="h-full bg-gradient-to-r from-brand-400 to-brand-600 rounded-full transition-all duration-500"
-              style={{ width: `${Math.round(xpInLevel / Math.max(xpForNext, 1) * 100)}%` }} />
+          <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--bd2)' }}>
+            <div className="h-full rounded-full transition-all duration-500"
+              style={{ width: `${Math.round(xpInLevel / Math.max(xpForNext, 1) * 100)}%`, background: 'linear-gradient(90deg,#d9b86e,#b98c3f)' }} />
           </div>
           <span className="text-[10px] text-ink-faint font-medium">{xp} XP</span>
         </div>
         <div className="flex-1 flex flex-col items-center justify-center px-1">
           <div className="relative">
-            <GoalRing done={goalDone} target={goalTarget} color={goalComplete ? '#22c55e' : '#4f46e5'} />
+            <GoalRing done={goalDone} target={goalTarget} color={goalComplete ? '#10b981' : '#b98c3f'} />
             <div className="absolute inset-0 flex items-center justify-center">
               {goalComplete ? <CheckCircle2 size={20} className="text-green-500" />
                 : <span className="text-xs font-bold text-ink-soft">{goalDone}/{goalTarget}</span>}
@@ -255,27 +260,36 @@ export default function Home() {
           <span className="text-[10px] text-ink-faint font-medium mt-0.5">daily goal</span>
         </div>
       </div>
+      </Stagger.Item>
 
       {/* A2: Daily Session — THE hero button */}
+      <Stagger.Item>
       <button onClick={() => navigate('/session')}
-        className="w-full bg-gradient-to-br from-brand-500 via-brand-600 to-indigo-700 text-white rounded-2xl p-5 flex items-center justify-between shadow-pop hover:shadow-lg active:scale-[0.98] transition-all relative overflow-hidden">
-        <div className="absolute -right-6 -top-8 w-32 h-32 rounded-full bg-white/10" />
+        className="w-full rounded-2xl p-5 flex items-center justify-between text-left text-white active:scale-[0.98] transition-all duration-200 hover:-translate-y-0.5 relative overflow-hidden cursor-pointer"
+        style={{ background: 'linear-gradient(135deg,#16202f 0%,#0f1a26 55%,#12343a 100%)', boxShadow: '0 18px 44px -18px rgba(13,17,27,.6), inset 0 1px 0 rgba(255,255,255,.08)' }}>
+        <div className="absolute -right-8 -top-10 w-40 h-40 rounded-full pointer-events-none"
+          style={{ background: 'radial-gradient(closest-side, rgba(217,184,110,.18), transparent 70%)' }} />
+        <div className="absolute -left-10 -bottom-14 w-44 h-44 rounded-full pointer-events-none"
+          style={{ background: 'radial-gradient(closest-side, rgba(95,217,206,.12), transparent 70%)' }} />
         <div className="flex items-center gap-3 relative">
-          <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
-            <Zap size={24} />
+          <div className="w-12 h-12 rounded-2xl flex items-center justify-center backdrop-blur-sm"
+            style={{ background: 'linear-gradient(180deg,#ecd9a8,#cfa654)', boxShadow: '0 8px 22px -8px rgba(217,184,110,.55)' }}>
+            <Zap size={24} className="text-[#201a0e]" />
           </div>
-          <div className="text-left">
-            <p className="font-bold text-lg leading-tight">Start today's session</p>
-            <p className="text-sm text-white/75">Review + continue + practice · ~10 min</p>
+          <div>
+            <p className="font-display text-xl font-medium leading-tight">{ctaLabel}</p>
+            <p className="text-sm text-white/60 mt-0.5">Review + continue + practice · ~10 min</p>
           </div>
         </div>
-        <ArrowRight size={22} className="relative" />
+        <ArrowRight size={22} className="relative text-[#ecd9a8]" />
       </button>
+      </Stagger.Item>
 
       {/* Resume (contextual) */}
       {resume?.has_session && resume.elapsed_hours < 48 && (
+        <Stagger.Item>
         <button onClick={() => navigate('/tutor', { state: { topic: resume.topic } })}
-          className="w-full card-tight card-hover flex items-center gap-3 text-left">
+          className="w-full card-tight card-hover flex items-center gap-3 text-left cursor-pointer">
           <div className="w-11 h-11 bg-brand-50 rounded-xl flex items-center justify-center flex-shrink-0">
             <Sparkles size={20} className="text-brand-600" />
           </div>
@@ -287,12 +301,14 @@ export default function Home() {
           </div>
           <ArrowRight size={16} className="text-ink-faint" />
         </button>
+        </Stagger.Item>
       )}
 
       {/* Review-due (contextual) */}
       {reviewDue && reviewDue.count > 0 && (
+        <Stagger.Item>
         <button onClick={() => navigate('/review')}
-          className="w-full bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-center gap-3 hover:bg-amber-100/70 transition-colors active:scale-[0.98]">
+          className="w-full bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-center gap-3 hover:bg-amber-100/70 transition-colors active:scale-[0.98] cursor-pointer">
           <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center flex-shrink-0">
             <RefreshCw size={18} className="text-amber-600" />
           </div>
@@ -302,11 +318,14 @@ export default function Home() {
           </div>
           <ArrowRight size={16} className="text-amber-400" />
         </button>
+        </Stagger.Item>
       )}
 
       {/* Ask anything */}
+      <Stagger.Item>
       <button onClick={() => navigate('/ask')}
-        className="w-full bg-white border-2 border-dashed border-brand-200 hover:border-brand-400 hover:bg-brand-50/40 rounded-2xl p-4 flex items-center gap-3 transition-all group">
+        className="w-full bg-white border-2 border-dashed rounded-2xl p-4 flex items-center gap-3 transition-all group cursor-pointer dark:bg-transparent"
+        style={{ borderColor: 'var(--bd)' }}>
         <div className="w-10 h-10 bg-brand-50 group-hover:bg-brand-100 rounded-xl flex items-center justify-center transition-colors flex-shrink-0">
           <MessageCircleQuestion size={20} className="text-brand-500" />
         </div>
@@ -316,49 +335,61 @@ export default function Home() {
         </div>
         <ArrowRight size={16} className="text-ink-faint group-hover:text-brand-500 transition-colors" />
       </button>
+      </Stagger.Item>
 
       {/* Feature #1: Step-by-step solver — write one step, checked live */}
+      <Stagger.Item>
       <button onClick={() => navigate('/solver')}
-        className="w-full bg-white border border-slate-200 hover:border-brand-300 rounded-2xl px-4 py-3 flex items-center gap-3 transition-colors text-left shadow-soft">
-        <span className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-indigo-600 text-white flex items-center justify-center flex-shrink-0"><PenLine size={18} /></span>
+        className="w-full bg-white border border-slate-200 hover:border-brand-300 rounded-2xl px-4 py-3 flex items-center gap-3 transition-colors text-left shadow-soft cursor-pointer dark:bg-transparent"
+        style={{ borderColor: 'var(--bd)' }}>
+        <span className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-[#201a0e]"
+          style={{ background: 'linear-gradient(180deg,#ecd9a8,#cfa654)' }}><PenLine size={18} /></span>
         <span className="text-sm text-ink-soft flex-1">Stuck mid-problem? <span className="font-semibold text-ink">Solve step by step — checked live</span></span>
         <ArrowRight size={14} className="text-ink-faint" />
       </button>
+      </Stagger.Item>
 
       {/* D1: Check my solution — photo step-check hero row */}
+      <Stagger.Item>
       <button onClick={() => navigate('/solve')}
-        className="w-full bg-white border border-slate-200 hover:border-brand-300 rounded-2xl px-4 py-3 flex items-center gap-3 transition-colors text-left shadow-soft">
-        <span className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-500 to-emerald-600 text-white flex items-center justify-center flex-shrink-0"><Camera size={18} /></span>
+        className="w-full bg-white border border-slate-200 hover:border-brand-300 rounded-2xl px-4 py-3 flex items-center gap-3 transition-colors text-left shadow-soft cursor-pointer dark:bg-transparent"
+        style={{ borderColor: 'var(--bd)' }}>
+        <span className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-white"
+          style={{ background: 'linear-gradient(180deg,#0d9488,#0b7269)' }}><Camera size={18} /></span>
         <span className="text-sm text-ink-soft flex-1">Solved on paper? <span className="font-semibold text-ink">Photo it — I'll find your mistake</span></span>
         <ArrowRight size={14} className="text-ink-faint" />
       </button>
+      </Stagger.Item>
 
       {/* Feature: Study buddy shared streak */}
-      <StudyBuddyCard />
+      <Stagger.Item><StudyBuddyCard /></Stagger.Item>
 
       {/* Feature tiles — chapters / feynman / exam plan */}
+      <Stagger.Item>
       <div className="grid grid-cols-3 gap-2">
         <button onClick={() => navigate('/materials')}
-          className="card-tight card-hover flex flex-col items-center gap-1.5 py-4 text-center">
-          <Upload size={20} className="text-blue-600" />
+          className="card-tight card-hover flex flex-col items-center gap-1.5 py-4 text-center cursor-pointer">
+          <Upload size={20} className="text-teal-600" />
           <span className="font-semibold text-xs text-ink-soft leading-tight">My Chapters</span>
         </button>
         <button onClick={() => navigate('/feynman')}
-          className="card-tight card-hover flex flex-col items-center gap-1.5 py-4 text-center">
-          <Brain size={20} className="text-purple-600" />
+          className="card-tight card-hover flex flex-col items-center gap-1.5 py-4 text-center cursor-pointer">
+          <Brain size={20} className="text-brand-600" />
           <span className="font-semibold text-xs text-ink-soft leading-tight">Explain Back</span>
         </button>
         <button onClick={() => navigate('/exam-plan')}
-          className="card-tight card-hover flex flex-col items-center gap-1.5 py-4 text-center">
+          className="card-tight card-hover flex flex-col items-center gap-1.5 py-4 text-center cursor-pointer">
           <CalendarDays size={20} className="text-accent-500" />
           <span className="font-semibold text-xs text-ink-soft leading-tight">Exam Plan</span>
         </button>
       </div>
+      </Stagger.Item>
 
       {/* Daily Quests */}
       {quests.length > 0 && (
+        <Stagger.Item>
         <div className="card">
-          <h3 className="section-title mb-3"><Swords size={16} className="text-purple-500" /> Daily Quests</h3>
+          <h3 className="section-title mb-3"><Swords size={16} className="text-brand-600" /> Daily Quests</h3>
           <div className="space-y-2">
             {quests.map(q => {
               const diffStyle = QUEST_DIFF_STYLES[q.difficulty] || QUEST_DIFF_STYLES.medium;
@@ -366,7 +397,7 @@ export default function Home() {
               const ready = q.progress >= q.target && !q.completed;
               return (
                 <div key={q.quest_id}
-                  className={`p-3 rounded-xl border transition-all ${q.completed ? 'bg-green-50 border-green-200' : ready ? 'bg-purple-50 border-purple-200' : 'bg-slate-50 border-slate-100'}`}>
+                  className={`p-3 rounded-xl border transition-all ${q.completed ? 'bg-green-50 border-green-200' : ready ? 'bg-brand-50 border-brand-200' : 'bg-slate-50 border-slate-100'}`}>
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
@@ -376,8 +407,8 @@ export default function Home() {
                       <p className="text-xs text-ink-faint mt-0.5">{q.description}</p>
                       {!q.completed && (
                         <div className="mt-2 flex items-center gap-2">
-                          <div className="flex-1 h-1.5 rounded-full bg-slate-200 overflow-hidden">
-                            <div className="h-full bg-purple-500 rounded-full transition-all duration-500" style={{ width: `${Math.round(pct * 100)}%` }} />
+                          <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--bd2)' }}>
+                            <div className="h-full bg-brand-500 rounded-full transition-all duration-500" style={{ width: `${Math.round(pct * 100)}%` }} />
                           </div>
                           <span className="text-[10px] font-medium text-ink-muted">{q.progress}/{q.target}</span>
                         </div>
@@ -388,7 +419,7 @@ export default function Home() {
                       {q.completed ? <CheckCircle2 size={20} className="text-green-500" />
                         : ready ? (
                           <button onClick={() => handleClaimQuest(q)} disabled={claimingQuest === q.quest_id}
-                            className="px-2.5 py-1 bg-purple-600 text-white text-xs font-bold rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50">Claim</button>
+                            className="px-2.5 py-1 bg-brand-600 text-white text-xs font-bold rounded-lg hover:bg-brand-700 transition-colors disabled:opacity-50 cursor-pointer">Claim</button>
                         ) : <Target size={16} className="text-slate-300" />}
                     </div>
                   </div>
@@ -397,10 +428,12 @@ export default function Home() {
             })}
           </div>
         </div>
+        </Stagger.Item>
       )}
 
       {/* Today's Plan */}
       {today?.tasks?.length > 0 && (
+        <Stagger.Item>
         <div className="card">
           <h3 className="section-title mb-3">Today's Plan</h3>
           <div className="space-y-2">
@@ -409,7 +442,7 @@ export default function Home() {
               return (
                 <button key={i}
                   onClick={() => { if (task.type === 'review') navigate('/review'); else navigate('/tutor', { state: { topic: task.topic } }); }}
-                  className="w-full flex items-center justify-between p-3 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors text-left">
+                  className="w-full flex items-center justify-between p-3 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors text-left cursor-pointer">
                   <div className="flex items-center gap-3 min-w-0">
                     <span className={`pill ${style.bg} ${style.color} flex-shrink-0`}>{style.label}</span>
                     <div className="min-w-0">
@@ -423,15 +456,17 @@ export default function Home() {
             })}
           </div>
         </div>
+        </Stagger.Item>
       )}
 
       {/* This Week snapshot + share */}
       {snapshot && snapshot.topics_touched_this_week > 0 && (
-        <div className="bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200 rounded-2xl p-4">
+        <Stagger.Item>
+        <div className="bg-gradient-to-br from-emerald-50/80 to-teal-50/60 border border-emerald-200 rounded-2xl p-4">
           <div className="flex items-center justify-between mb-3">
             <h3 className="section-title text-emerald-900"><TrendingUp size={16} className="text-emerald-600" /> This Week</h3>
             <button onClick={shareWeek} disabled={sharing}
-              className="text-xs px-2.5 py-1 rounded-lg bg-white border border-emerald-200 text-emerald-700 hover:bg-emerald-50 transition-colors flex items-center gap-1 disabled:opacity-50">
+              className="text-xs px-2.5 py-1 rounded-lg bg-white border border-emerald-200 text-emerald-700 hover:bg-emerald-50 transition-colors flex items-center gap-1 disabled:opacity-50 cursor-pointer">
               <Share2 size={12} /> {sharing ? '…' : 'Share'}
             </button>
           </div>
@@ -456,10 +491,12 @@ export default function Home() {
           {snapshot.next_up && <p className="text-xs text-emerald-700 mt-2 font-medium">Next up: <span className="capitalize">{snapshot.next_up}</span></p>}
           {snapshot.message && <p className="text-[10px] text-ink-faint mt-1.5 italic">{snapshot.message}</p>}
         </div>
+        </Stagger.Item>
       )}
 
       {/* Mastery */}
       {counts && counts.total > 0 && (
+        <Stagger.Item>
         <div className="card">
           <h3 className="section-title mb-3">Your mastery</h3>
           <div className="grid grid-cols-3 gap-3 text-center">
@@ -467,15 +504,17 @@ export default function Home() {
             <div><p className="text-xl font-extrabold text-amber-500">{counts.in_progress}</p><p className="text-xs text-ink-faint">Learning</p></div>
             <div><p className="text-xl font-extrabold text-slate-300">{counts.not_started}</p><p className="text-xs text-ink-faint">Not started</p></div>
           </div>
-          <div className="flex h-2 rounded-full overflow-hidden bg-slate-100 mt-3">
+          <div className="flex h-2 rounded-full overflow-hidden mt-3" style={{ background: 'var(--bd2)' }}>
             {counts.mastered > 0 && <div className="bg-green-500" style={{ width: `${Math.round(counts.mastered / counts.total * 100)}%` }} />}
             {counts.in_progress > 0 && <div className="bg-amber-400" style={{ width: `${Math.round(counts.in_progress / counts.total * 100)}%` }} />}
           </div>
         </div>
+        </Stagger.Item>
       )}
 
       {/* Badges */}
       {gam?.badges?.length > 0 && (
+        <Stagger.Item>
         <div className="card">
           <h3 className="section-title mb-3">Badges</h3>
           <div className="flex flex-wrap gap-2">
@@ -487,9 +526,11 @@ export default function Home() {
             ))}
           </div>
         </div>
+        </Stagger.Item>
       )}
 
       {/* Quick actions */}
+      <Stagger.Item>
       <div>
         <h3 className="section-title mb-2 px-1 text-ink-muted">More</h3>
         <div className="grid grid-cols-3 gap-2">
@@ -498,17 +539,18 @@ export default function Home() {
             { to: '/review', icon: RefreshCw, color: 'text-amber-500', label: 'Review' },
             { to: '/mistakes', icon: Zap, color: 'text-red-500', label: 'Mistakes' },
             { to: '/notebook', icon: NotebookPen, color: 'text-teal-500', label: 'Notebook' },
-            { to: '/flashcards', icon: Sparkles, color: 'text-purple-500', label: 'Cards' },
+            { to: '/flashcards', icon: Sparkles, color: 'text-brand-500', label: 'Cards' },
           { to: '/cheatsheet', icon: FileText, color: 'text-indigo-500', label: 'Cheat sheet' },
           ].map(({ to, icon: Icon, color, label }) => (
             <button key={to} onClick={() => navigate(to)}
-              className="card-tight card-hover flex flex-col items-center gap-1.5 py-3">
+              className="card-tight card-hover flex flex-col items-center gap-1.5 py-3 cursor-pointer">
               <Icon size={20} className={color} />
               <span className="font-medium text-[11px] text-ink-soft">{label}</span>
             </button>
           ))}
         </div>
       </div>
-    </div>
+      </Stagger.Item>
+    </Stagger>
   );
 }

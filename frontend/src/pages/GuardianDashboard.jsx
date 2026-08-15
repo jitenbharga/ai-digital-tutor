@@ -158,7 +158,7 @@ function ChildDetailView({ studentId, onBack }) {
           <p className="text-sm text-gray-500">Accuracy</p>
         </div>
         <div className="card text-center">
-          <p className="text-2xl font-bold text-purple-600">{Object.keys(progress.topics || {}).length}</p>
+          <p className="text-2xl font-bold text-brand-600">{Object.keys(progress.topics || {}).length}</p>
           <p className="text-sm text-gray-500">Topics</p>
         </div>
       </div>

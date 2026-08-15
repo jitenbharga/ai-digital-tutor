@@ -4,7 +4,7 @@ import { api } from '../lib/api';
 import { AlertCircle, CheckCircle2, ChevronDown, ChevronRight, Filter, BookOpen, Zap, Brain, Loader2 } from 'lucide-react';
 
 const SOURCE_STYLES = {
-  quiz:  { label: 'Quiz', bg: 'bg-purple-50', text: 'text-purple-700' },
+  quiz:  { label: 'Quiz', bg: 'bg-teal-50', text: 'text-teal-700' },
   tutor: { label: 'Tutor', bg: 'bg-blue-50', text: 'text-blue-700' },
 };
 
@@ -110,9 +110,10 @@ function MistakeCard({ mistake, onResolve, onLocalResolve }) {
             <div className="flex gap-2">
               <button
                 onClick={() => { setShowExplain(true); setGrade(null); }}
-                className="flex-1 py-2 bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium rounded-xl transition-colors flex items-center justify-center gap-1.5"
-              >
-                <Brain size={14} /> Explain it back
+                className="flex-1 py-2 text-[#201a0e] text-sm font-medium rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-1.5 hover:-translate-y-px"
+                  style={{ background: 'linear-gradient(180deg,#ecd9a8,#cfa654)' }}
+                >
+                  <Brain size={14} /> Explain it back
               </button>
               <button
                 onClick={handleResolve}
@@ -154,7 +155,8 @@ function MistakeCard({ mistake, onResolve, onLocalResolve }) {
                 <button
                   onClick={submitExplain}
                   disabled={grading || explainText.trim().length < 20}
-                  className="flex-1 py-2 bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium rounded-xl transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5"
+                  className="flex-1 py-2 text-[#201a0e] text-sm font-medium rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-1.5 hover:-translate-y-px"
+                  style={{ background: 'linear-gradient(180deg,#ecd9a8,#cfa654)' }}
                 >
                   {grading ? <><Loader2 size={14} className="animate-spin" /> Grading…</> : 'Submit explanation'}
                 </button>
@@ -238,11 +240,12 @@ export default function MistakesNotebook() {
           <button
             key={f.key}
             onClick={() => setFilter(f.key)}
-            className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-colors ${
+            className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-all ${
               filter === f.key
-                ? 'bg-brand-600 text-white'
+                ? 'text-[#201a0e]'
                 : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
             }`}
+            style={filter === f.key ? { background: 'linear-gradient(180deg,#ecd9a8,#cfa654)' } : undefined}
           >
             {f.label}
           </button>

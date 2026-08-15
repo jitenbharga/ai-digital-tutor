@@ -45,4 +45,13 @@ export default [
       'react-refresh/only-export-components': 'off',
     },
   },
+  {
+    // R3F (react-three-fiber): Three.js props (args, position, attach, blending,
+    // ...) are not known to eslint-plugin-react's JSX rule. This project pins
+    // @react-three/fiber@8 for React 18; the rule has no R3F support there.
+    files: ['src/components/3d/**/*.{js,jsx}'],
+    rules: {
+      'react/no-unknown-property': 'off',
+    },
+  },
 ];

@@ -124,7 +124,8 @@ export default function Feynman() {
   return (
     <div className="max-w-lg mx-auto px-4 py-6 space-y-6 animate-fade-in">
       <div className="text-center">
-        <div className="inline-flex items-center justify-center w-14 h-14 bg-gradient-to-br from-purple-500 to-fuchsia-600 text-white rounded-2xl mb-3 shadow-soft">
+        <div className="inline-flex items-center justify-center w-14 h-14 text-white rounded-2xl mb-3 shadow-soft"
+          style={{ background: 'linear-gradient(135deg,#d9b86e,#b98c3f 55%,#0d9488)' }}>
           <Brain size={26} />
         </div>
         <h2 className="text-2xl font-extrabold text-ink">Explain it back</h2>

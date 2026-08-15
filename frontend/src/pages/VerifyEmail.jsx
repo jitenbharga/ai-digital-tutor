@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { api } from '../lib/api';
-import Logo from '../components/Logo';
+import AuthShell from '../components/AuthShell';
 import { CheckCircle2, XCircle, Loader2 } from 'lucide-react';
 
 export default function VerifyEmail() {
@@ -28,33 +28,31 @@ export default function VerifyEmail() {
   }, [params]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-brand-50 to-indigo-50 px-4">
-      <div className="card w-full max-w-md text-center">
-        <div className="inline-flex mb-4"><Logo size={48} className="rounded-2xl" /></div>
-
+    <AuthShell>
+      <div className="flex flex-col items-center gap-1">
         {status === 'loading' && (
           <>
-            <Loader2 className="mx-auto text-brand-600 animate-spin" size={32} />
-            <p className="text-gray-500 mt-4">Verifying your email…</p>
+            <Loader2 className="text-brand-600 animate-spin" size={32} />
+            <p className="text-ink-muted mt-4">Verifying your email…</p>
           </>
         )}
         {status === 'ok' && (
           <>
-            <CheckCircle2 className="mx-auto text-green-600" size={40} />
-            <h2 className="text-xl font-bold text-gray-900 mt-3">Email verified</h2>
-            <p className="text-gray-500 mt-1">{msg}</p>
+            <CheckCircle2 className="text-green-600" size={40} />
+            <h2 className="font-display text-3xl font-medium tracking-tight text-ink mt-3">Email verified</h2>
+            <p className="text-ink-muted mt-1">{msg}</p>
             <Link to="/login" className="btn-primary w-full mt-6 inline-block">Sign in</Link>
           </>
         )}
         {status === 'error' && (
           <>
-            <XCircle className="mx-auto text-red-500" size={40} />
-            <h2 className="text-xl font-bold text-gray-900 mt-3">Verification failed</h2>
-            <p className="text-gray-500 mt-1">{msg}</p>
+            <XCircle className="text-red-500" size={40} />
+            <h2 className="font-display text-3xl font-medium tracking-tight text-ink mt-3">Verification failed</h2>
+            <p className="text-ink-muted mt-1">{msg}</p>
             <Link to="/login" className="btn-secondary w-full mt-6 inline-block">Back to sign in</Link>
           </>
         )}
       </div>
-    </div>
+    </AuthShell>
   );
 }

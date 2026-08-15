@@ -179,10 +179,11 @@ export default function QuizPage() {
       {/* Fix my weak spots — one-tap targeted practice from your own mistakes */}
       <button
         onClick={startWeakSpots}
-        className="w-full text-left rounded-2xl border border-brand-200 bg-gradient-to-br from-brand-50 to-indigo-50 p-4 shadow-soft hover:shadow-md transition-shadow"
+        className="w-full text-left rounded-2xl border border-brand-200 bg-gradient-to-br from-brand-50 to-teal-50 p-4 shadow-soft hover:shadow-md transition-shadow"
       >
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-brand-600 text-white flex items-center justify-center flex-shrink-0">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-[#201a0e]"
+            style={{ background: 'linear-gradient(180deg,#ecd9a8,#cfa654)' }}>
             <Target size={20} />
           </div>
           <div className="min-w-0">
@@ -216,7 +217,7 @@ export default function QuizPage() {
       {/* Studied topics */}
       {studiedTopics.length > 0 && (
         <div>
-          <h3 className="section-title mb-3"><Sparkles size={16} className="text-purple-500" /> Your Topics</h3>
+          <h3 className="section-title mb-3"><Sparkles size={16} className="text-brand-500" /> Your Topics</h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {[...new Set(studiedTopics)].map((topic) => (
               <button key={topic} onClick={() => startQuiz(topic)}

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../lib/api';
-import { BookOpen, Calculator, Beaker, Globe, Code, Atom, Brain, BarChart3, Shapes, CheckCircle2 } from 'lucide-react';
+import { BookOpen, Calculator, Beaker, Globe, Code, Atom, Brain, BarChart3, Shapes, CheckCircle2, ArrowRight } from 'lucide-react';
 
 const ICON_MAP = {
   calculator: Calculator,
@@ -45,10 +45,10 @@ export default function TopicSelect() {
   };
 
   return (
-    <div className="max-w-lg mx-auto px-4 py-6">
+    <div className="max-w-lg mx-auto px-4 py-8">
       <div className="text-center mb-8">
-        <h2 className="text-2xl font-bold text-gray-900">What do you want to learn?</h2>
-        <p className="text-gray-500 text-sm mt-1">Pick a subject to see its curriculum map</p>
+        <h2 className="font-display text-3xl font-semibold text-ink">What do you want to learn?</h2>
+        <p className="text-ink-muted text-sm mt-1.5">Pick a subject to see its curriculum map</p>
       </div>
 
       <div className="grid grid-cols-2 gap-3 mb-6">
@@ -58,7 +58,7 @@ export default function TopicSelect() {
             <button
               key={sub.id}
               onClick={() => handleSubject(sub)}
-              className="border rounded-2xl p-4 flex items-center gap-3 hover:shadow-md transition-all active:scale-[0.98] text-left bg-white border-gray-100 relative"
+              className="card card-hover flex items-center gap-3 text-left relative !p-4 cursor-pointer"
             >
               <div
                 className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
@@ -66,7 +66,7 @@ export default function TopicSelect() {
               >
                 <Icon size={22} style={{ color: sub.color }} />
               </div>
-              <span className="text-sm font-semibold text-gray-800">{sub.title}</span>
+              <span className="text-sm font-semibold text-ink">{sub.title}</span>
               {sub.started && (
                 <CheckCircle2 size={16} className="absolute top-2 right-2 text-green-500" />
               )}
@@ -78,12 +78,14 @@ export default function TopicSelect() {
       <form onSubmit={e => { e.preventDefault(); if (custom.trim()) handleCustomStart(custom.trim()); }}
         className="flex gap-2">
         <input
-          className="flex-1 px-4 py-3 rounded-2xl border border-gray-200 bg-white text-base focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-400 transition-shadow"
+          className="input-field flex-1 text-base !py-3"
           placeholder="Or type any topic for free-form tutoring..."
           value={custom}
           onChange={e => setCustom(e.target.value)}
         />
-        <button type="submit" className="btn-primary rounded-2xl px-5" disabled={!custom.trim()}>Go</button>
+        <button type="submit" className="btn-primary rounded-2xl px-5 cursor-pointer flex items-center gap-1.5" disabled={!custom.trim()}>
+          Go <ArrowRight size={16} />
+        </button>
       </form>
     </div>
   );

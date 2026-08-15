@@ -544,19 +544,20 @@ export default function Tutor() {
     {/* Main tutor area */}
     <div className="flex flex-col flex-1 min-w-0 min-h-0">
       {/* Topic header */}
-      <div className="flex-shrink-0 bg-white border-b border-gray-200 px-4 sm:px-6 py-3 flex flex-wrap items-center gap-x-4 gap-y-2">
-        <button onClick={() => navigate('/learn')} className="text-gray-400 hover:text-gray-600 flex-shrink-0">
+      <div className="flex-shrink-0 bg-white/70 dark:bg-[#0b0f18]/70 backdrop-blur-xl border-b px-4 sm:px-6 py-3 flex flex-wrap items-center gap-x-4 gap-y-2"
+        style={{ borderColor: 'var(--bd)' }}>
+        <button onClick={() => navigate('/learn')} className="text-ink-faint hover:text-ink-soft flex-shrink-0 cursor-pointer">
           <ArrowLeft size={20} />
         </button>
         <div className="min-w-0 flex-1">
-          <h2 className="font-semibold text-gray-900 truncate">{topic}</h2>
-          <p className="text-xs text-gray-500 truncate">Adaptive AI tutoring session</p>
+          <h2 className="font-display text-xl font-semibold text-ink truncate">{topic}</h2>
+          <p className="text-xs text-ink-muted truncate">Adaptive AI tutoring session</p>
         </div>
         {/* All session actions collapsed into a standard 3-dot overflow menu */}
         <div className="ml-auto relative flex-shrink-0">
           <button
             onClick={() => setMenuOpen(o => !o)}
-            className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors"
+            className="p-2 rounded-lg text-ink-muted hover:bg-white/10 hover:text-ink-soft transition-colors cursor-pointer"
             title="Session actions" aria-label="Session actions"
             aria-haspopup="true" aria-expanded={menuOpen}
           >
@@ -566,34 +567,34 @@ export default function Tutor() {
             <>
               {/* click-outside catcher */}
               <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} aria-hidden="true" />
-              <div className="absolute right-0 top-full mt-1 z-50 w-56 bg-white rounded-xl border border-gray-200 shadow-xl py-1 animate-fade-in menu-opaque">
+              <div className="absolute right-0 top-full mt-1 z-50 w-56 rounded-xl border shadow-xl py-1 animate-fade-in menu-opaque" style={{ borderColor: 'var(--bd)' }}>
                 <button
                   onClick={() => setUseStreaming(!useStreaming)}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                  className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-ink-soft hover:bg-white/5 transition-colors cursor-pointer"
                 >
-                  <Zap size={16} className={useStreaming ? 'text-green-600' : 'text-gray-400'} />
+                  <Zap size={16} className={useStreaming ? 'text-green-600' : 'text-ink-faint'} />
                   <span className="flex-1 text-left">Streaming</span>
-                  <span className={`text-xs font-semibold ${useStreaming ? 'text-green-600' : 'text-gray-400'}`}>{useStreaming ? 'On' : 'Off'}</span>
+                  <span className={`text-xs font-semibold ${useStreaming ? 'text-green-600' : 'text-ink-faint'}`}>{useStreaming ? 'On' : 'Off'}</span>
                 </button>
                 <button onClick={() => { setMenuOpen(false); handleStartQuiz(); }} disabled={quizLoading || quizMode}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50 transition-colors">
-                  <ClipboardList size={16} className="text-gray-400" />
+                  className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-ink-soft hover:bg-white/5 disabled:opacity-50 transition-colors cursor-pointer">
+                  <ClipboardList size={16} className="text-ink-faint" />
                   <span className="flex-1 text-left">{quizLoading ? 'Generating…' : 'Take Quiz'}</span>
                 </button>
                 <button onClick={() => { setMenuOpen(false); handleRecap(); }} disabled={recapLoading}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50 transition-colors">
-                  <Zap size={16} className="text-gray-400" />
+                  className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-ink-soft hover:bg-white/5 disabled:opacity-50 transition-colors cursor-pointer">
+                  <Zap size={16} className="text-ink-faint" />
                   <span className="flex-1 text-left">{recapLoading ? 'Loading…' : '60-second Recap'}</span>
                 </button>
                 <button onClick={() => { setMenuOpen(false); handleDiagnose(); }} disabled={diagnoseLoading}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50 transition-colors">
-                  <HelpCircle size={16} className="text-gray-400" />
+                  className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-ink-soft hover:bg-white/5 disabled:opacity-50 transition-colors cursor-pointer">
+                  <HelpCircle size={16} className="text-ink-faint" />
                   <span className="flex-1 text-left">{diagnoseLoading ? 'Checking…' : 'Why am I stuck?'}</span>
                 </button>
-                <div className="my-1 border-t border-gray-100" />
+                <div className="my-1 border-t" style={{ borderColor: 'var(--bd2)' }} />
                 <button onClick={() => { setMenuOpen(false); handleNewChat(); }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
-                  <RefreshCw size={16} className="text-gray-400" />
+                  className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-ink-soft hover:bg-white/5 transition-colors cursor-pointer">
+                  <RefreshCw size={16} className="text-ink-faint" />
                   <span className="flex-1 text-left">New Chat</span>
                 </button>
               </div>
@@ -603,29 +604,29 @@ export default function Tutor() {
       </div>
 
       {/* Chat messages + Quiz */}
-      <div ref={chatAreaRef} className="flex-1 min-h-0 overflow-y-auto px-4 sm:px-6 py-6 space-y-4 bg-gray-50 relative">
+      <div ref={chatAreaRef} className="flex-1 min-h-0 overflow-y-auto px-4 sm:px-6 py-6 space-y-4 relative">
         {/* Opening topic summary — loads automatically so the student gets oriented first */}
         {summaryLoading && !recap && (
-          <div className="max-w-3xl mx-auto w-full bg-gradient-to-br from-brand-50 to-indigo-50 border border-brand-200 rounded-2xl p-4 shadow-soft animate-pulse">
+          <div className="max-w-3xl mx-auto w-full bg-gradient-to-br from-brand-50/70 to-teal-50/40 border border-brand-200 rounded-2xl p-4 shadow-soft animate-pulse">
             <p className="flex items-center gap-2 text-brand-700 text-sm font-medium">
               <BookOpen size={16} /> Preparing a quick summary of <span className="capitalize font-semibold">{topic}</span>…
             </p>
           </div>
         )}
         {recap && (
-          <div className="max-w-3xl mx-auto w-full bg-gradient-to-br from-brand-50 to-indigo-50 border border-brand-200 rounded-2xl p-4 shadow-soft animate-fade-in">
+          <div className="max-w-3xl mx-auto w-full bg-gradient-to-br from-brand-50/70 to-teal-50/40 border border-brand-200 rounded-2xl p-4 shadow-soft animate-fade-in">
             <div className="flex items-start gap-2">
               {recap._auto
                 ? <BookOpen size={18} className="text-brand-600 mt-0.5 flex-shrink-0" />
                 : <Zap size={18} className="text-brand-600 mt-0.5 flex-shrink-0" />}
               <div className="flex-1 min-w-0">
-                <p className="font-bold text-slate-900 text-sm">
+                <p className="font-bold text-ink text-sm">
                   {recap._auto ? 'Quick summary' : '60-second recap'}: <span className="capitalize">{topic}</span>
                 </p>
                 {recap._auto && <p className="text-xs text-brand-600 mt-0.5">Here's the gist before we dive in 👇</p>}
-                {recap.big_idea && <p className="text-sm text-slate-700 mt-1 font-medium">{recap.big_idea}</p>}
+                {recap.big_idea && <p className="text-sm text-ink-soft mt-1 font-medium">{recap.big_idea}</p>}
                 {recap.key_points?.length > 0 && (
-                  <ul className="mt-2 space-y-1 text-sm text-slate-700">
+                  <ul className="mt-2 space-y-1 text-sm text-ink-soft">
                     {recap.key_points.map((p, i) => <li key={i} className="flex gap-2"><span className="text-brand-400">•</span>{p}</li>)}
                   </ul>
                 )}
@@ -633,7 +634,7 @@ export default function Tutor() {
                   <p className="text-xs text-amber-700 mt-2 bg-amber-50 rounded-lg px-2 py-1">⚠ Watch out: {recap.common_trap}</p>
                 )}
               </div>
-              <button onClick={() => setRecap(null)} className="text-slate-300 hover:text-slate-600 flex-shrink-0" aria-label="Dismiss summary"><X size={16} /></button>
+              <button onClick={() => setRecap(null)} className="text-ink-faint hover:text-ink-soft flex-shrink-0 cursor-pointer" aria-label="Dismiss summary"><X size={16} /></button>
             </div>
           </div>
         )}
@@ -651,19 +652,20 @@ export default function Tutor() {
 
         {/* C1: Why-am-I-stuck diagnosis panel */}
         {diagnosis && (
-          <div className="max-w-3xl mx-auto w-full bg-white border-2 border-amber-200 rounded-2xl p-4 shadow-sm">
+          <div className="max-w-3xl mx-auto w-full border-2 border-amber-200 rounded-2xl p-4 shadow-sm"
+            style={{ background: 'var(--s1)', borderColor: 'var(--bd)' }}>
             <div className="flex items-start gap-2">
               <AlertTriangle size={18} className="text-amber-500 mt-0.5 flex-shrink-0" />
               <div className="flex-1">
-                <p className="font-semibold text-gray-900 text-sm">Why am I stuck?</p>
-                <p className="text-sm text-gray-700 mt-1">{diagnosis.explanation}</p>
+                <p className="font-semibold text-ink text-sm">Why am I stuck?</p>
+                <p className="text-sm text-ink-soft mt-1">{diagnosis.explanation}</p>
                 {diagnosis.chain?.length > 1 && (
                   <div className="mt-3 flex items-center flex-wrap gap-1.5 text-xs">
                     {diagnosis.chain.map((c, i) => (
                       <span key={i} className="flex items-center gap-1.5">
-                        {i > 0 && <span className="text-gray-300">→</span>}
+                        {i > 0 && <span className="text-ink-faint">→</span>}
                         <span className={`px-2 py-1 rounded-lg font-medium ${
-                          c.is_root_gap ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-600'
+                          c.is_root_gap ? 'bg-red-100 text-red-700' : 'bg-slate-50 text-ink-muted'
                         }`}>
                           {c.concept} · {Math.round(c.mastery * 100)}%
                         </span>
@@ -678,13 +680,13 @@ export default function Tutor() {
                       setDiagnosis(null);
                       navigate('/tutor', { state: { topic: rg.concept, subject }, replace: true });
                     }}
-                    className="btn-primary text-xs mt-3 flex items-center gap-1.5"
+                    className="btn-primary text-xs mt-3 flex items-center gap-1.5 cursor-pointer"
                   >
                     Go fix {diagnosis.root_gap.concept} →
                   </button>
                 )}
               </div>
-              <button onClick={() => setDiagnosis(null)} className="text-gray-300 hover:text-gray-600 flex-shrink-0">
+              <button onClick={() => setDiagnosis(null)} className="text-ink-faint hover:text-ink-soft flex-shrink-0 cursor-pointer">
                 <X size={16} />
               </button>
             </div>
@@ -718,8 +720,8 @@ export default function Tutor() {
 
         {loading && !isStreaming && (
           <div className="flex justify-start">
-            <div className="bg-white rounded-2xl px-5 py-4 shadow-sm border border-gray-100">
-              <div className="flex items-center gap-2 text-gray-400">
+            <div className="rounded-2xl px-5 py-4 shadow-sm border" style={{ background: 'var(--s1)', borderColor: 'var(--bd)' }}>
+              <div className="flex items-center gap-2 text-ink-muted">
                 <div className="animate-spin h-4 w-4 border-2 border-brand-500 border-t-transparent rounded-full" />
                 <span className="text-sm">Thinking...</span>
               </div>
@@ -739,7 +741,8 @@ export default function Tutor() {
           >
             <button
               onClick={openAskPanel}
-              className="flex items-center gap-1.5 px-3 py-2 bg-brand-600 text-white text-xs font-medium rounded-xl shadow-lg hover:bg-brand-700 transition-all"
+              className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-xl shadow-lg transition-all hover:-translate-y-px cursor-pointer"
+              style={{ background: '#141a26', color: '#ecd9a8', boxShadow: '0 10px 26px -12px rgba(13,17,27,.6)' }}
             >
               <MessageCircleQuestion size={14} /> Ask about this
             </button>
@@ -751,7 +754,7 @@ export default function Tutor() {
                 setSelectedText('');
                 setSelectionPos(null);
               }}
-              className="flex items-center gap-1.5 px-3 py-2 bg-teal-600 text-white text-xs font-medium rounded-xl shadow-lg hover:bg-teal-700 transition-all"
+              className="flex items-center gap-1.5 px-3 py-2 bg-teal-600 text-white text-xs font-medium rounded-xl shadow-lg hover:bg-teal-700 transition-all hover:-translate-y-px cursor-pointer"
             >
               <NotebookPen size={14} /> Save
             </button>
@@ -761,7 +764,8 @@ export default function Tutor() {
 
       {/* Answer input (hidden during quiz) */}
       {!quizMode && (
-        <form onSubmit={handleSubmit} className="flex-shrink-0 bg-white border-t border-gray-200 px-4 sm:px-6 py-4">
+        <form onSubmit={handleSubmit} className="flex-shrink-0 border-t px-4 sm:px-6 py-4 bg-white/70 dark:bg-[#0b0f18]/70 backdrop-blur-xl"
+          style={{ borderColor: 'var(--bd)' }}>
           <div className="flex gap-2 sm:gap-3 max-w-3xl mx-auto">
             <input
               className="input-field flex-1 min-w-0"
@@ -778,14 +782,14 @@ export default function Tutor() {
                   dictBaseRef.current = answer ? answer.trim() + ' ' : '';
                   startListening((full) => setAnswer(dictBaseRef.current + full));
                 }}
-                className={`px-3 py-2 rounded-xl transition-colors ${listening ? 'bg-red-100 text-red-600 animate-pulse dark:bg-red-500/20 dark:text-red-300' : 'bg-gray-100 text-gray-500 hover:bg-gray-200 dark:bg-white/10 dark:text-gray-300 dark:hover:bg-white/15'}`}
+                className={`px-3 py-2 rounded-xl transition-colors cursor-pointer ${listening ? 'bg-red-100 text-red-600 animate-pulse dark:bg-red-500/20 dark:text-red-300' : 'bg-gray-100 text-gray-500 hover:bg-gray-200 dark:bg-white/10 dark:text-gray-300 dark:hover:bg-white/15'}`}
                 title={listening ? 'Stop dictation' : 'Dictate your answer'}
                 aria-label={listening ? 'Stop dictation' : 'Dictate your answer'}
               >
                 {listening ? <MicOff size={18} /> : <Mic size={18} />}
               </button>
             )}
-            <button type="submit" className="btn-primary flex items-center gap-2 flex-shrink-0" disabled={!answer.trim() || loading}>
+            <button type="submit" className="btn-primary flex items-center gap-2 flex-shrink-0 cursor-pointer" disabled={!answer.trim() || loading}>
               <Send size={18} /> <span className="hidden sm:inline">Send</span>
             </button>
           </div>
@@ -812,12 +816,13 @@ export default function Tutor() {
 
     {/* N8: Highlight-to-ask scoped side panel (bottom sheet on mobile) */}
     {askPanel && (
-      <div className="fixed inset-y-0 right-0 z-50 w-full sm:w-96 bg-white shadow-2xl border-l border-gray-200 flex flex-col">
-        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
-          <div className="flex items-center gap-2 text-sm font-semibold text-gray-800">
+      <div className="fixed inset-y-0 right-0 z-50 w-full sm:w-96 shadow-2xl border-l border-gray-200 flex flex-col drawer-opaque"
+        style={{ borderColor: 'var(--bd)' }}>
+        <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: 'var(--bd)' }}>
+          <div className="flex items-center gap-2 text-sm font-semibold text-ink">
             <MessageCircleQuestion size={16} className="text-brand-600" /> Ask about selection
           </div>
-          <button onClick={() => setAskPanel(null)} className="text-gray-400 hover:text-gray-700 text-lg leading-none px-2" aria-label="Close">✕</button>
+          <button onClick={() => setAskPanel(null)} className="text-ink-faint hover:text-ink-soft text-lg leading-none px-2 cursor-pointer" aria-label="Close">✕</button>
         </div>
         <div className="px-4 py-2 bg-amber-50 border-b border-amber-100 text-xs text-amber-800 italic">
           “{askPanel.selectedText.slice(0, 160)}{askPanel.selectedText.length > 160 ? '…' : ''}”
@@ -825,17 +830,22 @@ export default function Tutor() {
         <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
           {askPanel.turns.map((t, i) => (
             <div key={i} className={t.role === 'student' ? 'text-right' : ''}>
-              <div className={`inline-block px-3 py-2 rounded-2xl text-sm max-w-[85%] text-left ${t.role === 'student' ? 'bg-brand-600 text-white' : 'bg-gray-100 text-gray-800'}`}>
+              <div className={`inline-block px-3 py-2 rounded-2xl text-sm max-w-[85%] text-left ${
+                t.role === 'student'
+                  ? 'text-white'
+                  : 'bg-gray-100 text-gray-800 dark:bg-white/10 dark:text-gray-100'
+              }`}
+                style={t.role === 'student' ? { background: 'linear-gradient(135deg,#16202f,#0f1a26 65%,#12343a)' } : undefined}>
                 {t.content}
               </div>
-              {t.probing && <p className="text-xs text-gray-500 mt-1 italic">{t.probing}</p>}
+              {t.probing && <p className="text-xs text-ink-muted mt-1 italic">{t.probing}</p>}
             </div>
           ))}
-          {askPanel.loading && <p className="text-xs text-gray-400">Thinking…</p>}
+          {askPanel.loading && <p className="text-xs text-ink-faint">Thinking…</p>}
         </div>
         <form
           onSubmit={(e) => { e.preventDefault(); sendAskSelection(askPanel.input); }}
-          className="p-3 border-t border-gray-200 flex gap-2"
+          className="p-3 border-t flex gap-2" style={{ borderColor: 'var(--bd)' }}
         >
           <input
             className="input-field flex-1 text-sm"
@@ -844,7 +854,7 @@ export default function Tutor() {
             onChange={(e) => setAskPanel(p => ({ ...p, input: e.target.value }))}
             disabled={askPanel.loading}
           />
-          <button type="submit" className="btn-primary px-3" disabled={!askPanel.input.trim() || askPanel.loading}>
+          <button type="submit" className="btn-primary px-3 cursor-pointer" disabled={!askPanel.input.trim() || askPanel.loading}>
             <Send size={16} />
           </button>
         </form>

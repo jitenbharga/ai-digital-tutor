@@ -13,7 +13,7 @@ const RE_EXPLAIN_STYLES = [
 function ExplanationBlock({ explanation }) {
   if (!explanation) return null;
   return (
-    <div className="bg-brand-50 border border-brand-100 rounded-lg p-4 mt-3 space-y-2 text-sm">
+    <div className="bg-brand-50 border border-brand-100 rounded-xl p-4 mt-3 space-y-2 text-sm">
       {explanation.core_concept && (
         <div><span className="font-semibold text-brand-700">Core concept:</span> {explanation.core_concept}</div>
       )}
@@ -34,24 +34,24 @@ function ExplanationBlock({ explanation }) {
 
 function FeedbackBlock({ feedback }) {
   return (
-    <div className={`rounded-lg p-4 mt-3 text-sm space-y-2 ${feedback.correct ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
+    <div className={`rounded-xl p-4 mt-3 text-sm space-y-2 ${feedback.correct ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
       <div className="flex items-center gap-2 font-semibold">
         <span className="text-lg">{feedback.correct ? '✅' : '❌'}</span>
         <span>{feedback.correct ? 'Correct!' : 'Not quite right'}</span>
-        <span className="ml-auto text-xs font-normal text-gray-500">Score: {(feedback.score * 100).toFixed(0)}%</span>
+        <span className="ml-auto text-xs font-normal text-ink-muted">Score: {(feedback.score * 100).toFixed(0)}%</span>
       </div>
       {feedback.reasoning && <div><span className="font-medium">Reasoning:</span> {feedback.reasoning}</div>}
       {feedback.targeted_feedback && <div><span className="font-medium">Feedback:</span> {feedback.targeted_feedback}</div>}
-      {feedback.remediation && <div className="text-gray-600"><span className="font-medium">Remediation:</span> {feedback.remediation}</div>}
+      {feedback.remediation && <div className="text-ink-muted"><span className="font-medium">Remediation:</span> {feedback.remediation}</div>}
       {feedback.misconception && !feedback.misconception_probe && (
         <div className="text-orange-700"><span className="font-medium">Misconception:</span> {feedback.misconception}</div>
       )}
       {feedback.misconception_probe && (
-        <div className="mt-3 bg-indigo-50 border border-indigo-200 rounded-lg p-3 space-y-1">
-          <div className="font-semibold text-indigo-800 text-xs uppercase tracking-wide">Think about it</div>
-          <div className="text-indigo-900">{feedback.misconception_probe.probe}</div>
+        <div className="mt-3 bg-teal-50 border border-teal-100 rounded-xl p-3 space-y-1">
+          <div className="font-semibold text-teal-700 text-xs uppercase tracking-wide">Think about it</div>
+          <div className="text-teal-900">{feedback.misconception_probe.probe}</div>
           {feedback.misconception_probe.follow_up_if_stuck && (
-            <details className="text-xs text-indigo-600 cursor-pointer mt-1">
+            <details className="text-xs text-teal-600 cursor-pointer mt-1">
               <summary>Stuck? Get a nudge</summary>
               <p className="mt-1">{feedback.misconception_probe.follow_up_if_stuck}</p>
             </details>
@@ -76,7 +76,8 @@ export default function ChatMessage({ message, onReExplain }) {
   if (role === 'user') {
     return (
       <div className="flex justify-end min-w-0">
-        <div className="bg-brand-600 text-white rounded-2xl rounded-br-md px-4 py-3 max-w-lg shadow-sm min-w-0">
+        <div className="text-white rounded-2xl rounded-br-md px-4 py-3 max-w-lg shadow-sm min-w-0"
+          style={{ background: 'linear-gradient(135deg,#16202f,#0f1a26 65%,#12343a)', boxShadow: '0 10px 26px -14px rgba(13,17,27,.55), inset 0 1px 0 rgba(255,255,255,.07)' }}>
           {content}
         </div>
       </div>
@@ -85,10 +86,11 @@ export default function ChatMessage({ message, onReExplain }) {
 
   return (
     <div className="flex justify-start min-w-0">
-      <div className="bg-white rounded-2xl rounded-bl-md px-5 py-4 max-w-2xl shadow-sm border border-gray-100 min-w-0">
+      <div className="rounded-2xl rounded-bl-md px-5 py-4 max-w-2xl shadow-sm border min-w-0"
+        style={{ background: 'var(--s1)', borderColor: 'var(--bd)', boxShadow: 'var(--shadow)' }}>
         {mode && <ModeBadge mode={mode} />}
         {reExplain && (
-          <span className="inline-block text-xs px-2 py-0.5 rounded bg-brand-50 text-brand-600 font-medium mb-1">
+          <span className="inline-block text-xs px-2 py-0.5 rounded bg-brand-50 text-brand-700 font-medium mb-1">
             {RE_EXPLAIN_STYLES.find(s => s.key === reExplain.style)?.icon || '🔄'} {(reExplain.style || '').replace('_', ' ')}
           </span>
         )}
@@ -98,25 +100,26 @@ export default function ChatMessage({ message, onReExplain }) {
         {explanation && <ExplanationBlock explanation={explanation} />}
         {feedback && <FeedbackBlock feedback={feedback} />}
         {hint && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mt-3 text-sm">
-            <span className="font-semibold text-yellow-800">💡 Hint:</span> {hint}
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mt-3 text-sm">
+            <span className="font-semibold text-amber-800">💡 Hint:</span> {hint}
           </div>
         )}
         {reExplain?.check_understanding && (
-          <div className="mt-2 bg-green-50 border border-green-200 rounded-lg p-2">
+          <div className="mt-2 bg-green-50 border border-green-200 rounded-xl p-2">
             <p className="text-xs text-green-800">{reExplain.check_understanding}</p>
           </div>
         )}
         {/* N2: Re-explain buttons on tutor explanation messages */}
         {role === 'tutor' && content && !feedback && !hint && !streaming && !reExplain && onReExplain && (
-          <div className="mt-3 flex flex-wrap gap-2 border-t border-gray-100 pt-3">
-            <span className="text-xs text-gray-400 self-center mr-1">Didn't get it?</span>
+          <div className="mt-3 flex flex-wrap gap-2 border-t pt-3" style={{ borderColor: 'var(--bd2)' }}>
+            <span className="text-xs text-ink-faint self-center mr-1">Didn't get it?</span>
             {RE_EXPLAIN_STYLES.map(s => (
               <button
                 key={s.key}
                 onClick={() => handleReExplain(s.key)}
                 disabled={reExplaining}
-                className="text-xs px-2.5 py-1.5 rounded-lg bg-gray-50 hover:bg-brand-50 hover:text-brand-700 text-gray-600 border border-gray-200 transition-colors disabled:opacity-50 flex items-center gap-1"
+                className="text-xs px-2.5 py-1.5 rounded-lg bg-slate-50 hover:bg-brand-50 hover:text-brand-700 text-ink-muted border transition-colors disabled:opacity-50 flex items-center gap-1"
+                style={{ borderColor: 'var(--bd)' }}
               >
                 <span>{s.icon}</span> {s.label}
               </button>

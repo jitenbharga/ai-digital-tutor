@@ -70,7 +70,7 @@ export default function Review() {
   if (loading && done === 0) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="animate-spin h-8 w-8 border-4 border-amber-500 border-t-transparent rounded-full" />
+        <div className="animate-spin h-8 w-8 border-4 border-brand-500 border-t-transparent rounded-full" />
       </div>
     );
   }
@@ -82,17 +82,17 @@ export default function Review() {
         <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6">
           <Trophy size={40} className="text-green-500" />
         </div>
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">
+        <h2 className="font-display text-3xl font-semibold text-ink mb-2">
           {done > 0 ? 'Review complete!' : 'Nothing to review'}
         </h2>
-        <p className="text-gray-500 mb-6">
+        <p className="text-ink-muted mb-6">
           {done > 0
             ? `You reviewed ${done} topic${done > 1 ? 's' : ''}. Nice work!`
             : 'All your topics are fresh. Come back later!'}
         </p>
         <button
           onClick={() => { setDone(0); setTotal(0); setSessionDone(false); loadReview(); }}
-          className="btn-secondary inline-flex items-center gap-2"
+          className="btn-secondary inline-flex items-center gap-2 cursor-pointer"
         >
           <RefreshCw size={16} /> Check again
         </button>
@@ -107,16 +107,16 @@ export default function Review() {
       {/* Progress header */}
       <div>
         <div className="flex items-center justify-between mb-2">
-          <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-            <RefreshCw size={20} className="text-amber-500" />
+          <h2 className="font-display text-2xl font-semibold text-ink flex items-center gap-2">
+            <RefreshCw size={20} className="text-brand-500" />
             Daily Review
           </h2>
-          <span className="text-sm text-gray-400 font-medium">{done} / {total}</span>
+          <span className="text-sm text-ink-faint font-medium">{done} / {total}</span>
         </div>
-        <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+        <div className="h-2 rounded-full overflow-hidden" style={{ background: 'var(--bd2)' }}>
           <div
-            className="h-full bg-amber-500 rounded-full transition-all duration-500"
-            style={{ width: `${progress}%` }}
+            className="h-full rounded-full transition-all duration-500"
+            style={{ width: `${progress}%`, background: 'linear-gradient(90deg,#d9b86e,#b98c3f)' }}
           />
         </div>
       </div>
@@ -124,12 +124,12 @@ export default function Review() {
       {/* Topic badge */}
       {currentTopic && (
         <div className="flex items-center gap-2">
-          <span className="text-xs font-bold px-2.5 py-1 rounded-lg bg-amber-50 text-amber-600">
+          <span className="text-xs font-bold px-2.5 py-1 rounded-lg bg-brand-50 text-brand-700">
             Review
           </span>
-          <span className="text-sm font-medium text-gray-700 capitalize">{currentTopic}</span>
+          <span className="text-sm font-medium text-ink-soft capitalize">{currentTopic}</span>
           {dueTops[0] && (
-            <span className="text-xs text-gray-400 ml-auto">
+            <span className="text-xs text-ink-faint ml-auto">
               {Math.round(dueTops[0].retention_estimate * 100)}% retained
             </span>
           )}
@@ -137,10 +137,10 @@ export default function Review() {
       )}
 
       {/* Question card */}
-      <div className="bg-white border border-gray-200 rounded-2xl p-5">
+      <div className="card">
         {loading ? (
           <div className="flex items-center justify-center py-8">
-            <div className="animate-spin h-6 w-6 border-3 border-amber-500 border-t-transparent rounded-full" />
+            <div className="animate-spin h-6 w-6 border-3 border-brand-500 border-t-transparent rounded-full" />
           </div>
         ) : question ? (
           <div className="space-y-3">
@@ -149,15 +149,15 @@ export default function Review() {
                 {question.refresher}
               </p>
             )}
-            <p className="text-gray-900 text-base leading-relaxed whitespace-pre-wrap">
+            <p className="text-ink text-base leading-relaxed whitespace-pre-wrap">
               {question.question || question}
             </p>
             {question.tests_concept && (
-              <p className="text-xs text-gray-400 mt-2">Testing: {question.tests_concept}</p>
+              <p className="text-xs text-ink-faint mt-2">Testing: {question.tests_concept}</p>
             )}
           </div>
         ) : (
-          <p className="text-gray-400 text-center py-4">No question available</p>
+          <p className="text-ink-faint text-center py-4">No question available</p>
         )}
       </div>
 
@@ -181,12 +181,13 @@ export default function Review() {
               <p className={`font-medium text-sm ${feedback.correct ? 'text-green-800' : 'text-red-800'}`}>
                 {feedback.correct ? 'Correct!' : 'Not quite'}
               </p>
-              <p className="text-sm text-gray-600 mt-1">{feedback.feedback}</p>
+              <p className="text-sm text-ink-muted mt-1">{feedback.feedback}</p>
             </div>
           </div>
           <button
             onClick={handleNext}
-            className="w-full mt-4 bg-white border border-gray-200 rounded-xl py-3 font-medium text-gray-700 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 active:scale-[0.98]"
+            className="w-full mt-4 rounded-xl py-3 font-medium text-ink-soft hover:bg-white/60 transition-colors flex items-center justify-center gap-2 active:scale-[0.98] cursor-pointer border"
+            style={{ background: 'var(--s1)', borderColor: 'var(--bd)' }}
           >
             Next <ChevronRight size={16} />
           </button>
@@ -197,7 +198,7 @@ export default function Review() {
       {!feedback && question && (
         <form onSubmit={handleSubmit} className="space-y-3">
           <input
-            className="w-full px-4 py-3.5 rounded-2xl border border-gray-200 bg-white text-base focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-400 transition-shadow"
+            className="input-field !py-3.5 text-base"
             placeholder="Type your answer..."
             value={answer}
             onChange={e => setAnswer(e.target.value)}
@@ -207,10 +208,11 @@ export default function Review() {
           <button
             type="submit"
             disabled={!answer.trim() || submitting}
-            className="w-full bg-amber-500 hover:bg-amber-600 text-white rounded-2xl py-3.5 font-semibold transition-colors disabled:opacity-50 flex items-center justify-center gap-2 active:scale-[0.98]"
+            className="w-full rounded-2xl py-3.5 font-semibold text-[#201a0e] transition-all duration-150 hover:-translate-y-px disabled:opacity-50 flex items-center justify-center gap-2 active:scale-[0.98] cursor-pointer"
+            style={{ background: 'linear-gradient(180deg,#ecd9a8,#cfa654)', boxShadow: '0 12px 30px -14px rgba(185,140,63,.5)' }}
           >
             {submitting ? (
-              <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full" />
+              <div className="animate-spin h-5 w-5 border-2 border-[#201a0e]/40 border-t-[#201a0e] rounded-full" />
             ) : (
               <>Submit <ArrowRight size={18} /></>
             )}
@@ -220,11 +222,11 @@ export default function Review() {
 
       {/* Due topics list */}
       {dueTops.length > 1 && (
-        <div className="text-xs text-gray-400 pt-2">
+        <div className="text-xs text-ink-faint pt-2">
           <p className="mb-2 font-medium">Coming up:</p>
           <div className="flex flex-wrap gap-1.5">
             {dueTops.slice(1, 6).map((t, i) => (
-              <span key={i} className="px-2 py-1 bg-gray-100 rounded-lg capitalize">{t.topic}</span>
+              <span key={i} className="px-2 py-1 rounded-lg capitalize" style={{ background: 'var(--bd2)' }}>{t.topic}</span>
             ))}
             {dueTops.length > 6 && <span className="px-2 py-1">+{dueTops.length - 6} more</span>}
           </div>

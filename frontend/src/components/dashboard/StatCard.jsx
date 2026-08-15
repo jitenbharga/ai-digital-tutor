@@ -12,8 +12,8 @@ export default function StatCard({
         <Icon className={color} size={22} />
       </div>
       <div>
-        <p className="text-sm text-gray-500">{label}</p>
-        <p className="text-xl font-bold text-gray-900">{value}</p>
+        <p className="text-sm text-ink-muted">{label}</p>
+        <p className="font-display text-2xl font-semibold text-ink">{value}</p>
       </div>
     </div>
   );

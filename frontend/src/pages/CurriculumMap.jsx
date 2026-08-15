@@ -6,7 +6,7 @@ import ProjectBrief from '../components/ProjectBrief';
 
 const STATUS_STYLES = {
   done:        { bg: 'bg-green-100', border: 'border-green-300', text: 'text-green-800', icon: CheckCircle2, iconColor: 'text-green-500' },
-  in_progress: { bg: 'bg-blue-50',  border: 'border-blue-300',  text: 'text-blue-800',  icon: Play,         iconColor: 'text-blue-500' },
+  in_progress: { bg: 'bg-teal-50',  border: 'border-teal-300',  text: 'text-teal-800',  icon: Play,         iconColor: 'text-teal-500' },
   not_started: { bg: 'bg-gray-50',  border: 'border-gray-200',  text: 'text-gray-600',  icon: Circle,       iconColor: 'text-gray-400' },
   skipped:     { bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-700',  icon: SkipForward,  iconColor: 'text-amber-500' },
 };
@@ -17,10 +17,10 @@ function ProgressHeader({ stats, subjectTitle }) {
   const mins = (stats?.est_minutes_left || 0) % 60;
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 p-5 space-y-3">
+    <div className="card space-y-3">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-bold text-gray-900">{subjectTitle}</h2>
-        <div className="flex items-center gap-1.5 text-sm text-gray-500">
+        <h2 className="font-display text-2xl font-semibold text-ink">{subjectTitle}</h2>
+        <div className="flex items-center gap-1.5 text-sm text-ink-muted">
           <Clock size={14} />
           <span>{hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`} left</span>
         </div>
@@ -28,21 +28,21 @@ function ProgressHeader({ stats, subjectTitle }) {
 
       <div className="space-y-1.5">
         <div className="flex justify-between text-sm">
-          <span className="text-gray-500">{stats?.done || 0} of {stats?.total || 0} completed</span>
+          <span className="text-ink-muted">{stats?.done || 0} of {stats?.total || 0} completed</span>
           <span className="font-semibold text-brand-600">{pct}%</span>
         </div>
-        <div className="w-full bg-gray-100 rounded-full h-2.5">
+        <div className="w-full rounded-full h-2.5 overflow-hidden" style={{ background: 'var(--bd2)' }}>
           <div
-            className="bg-brand-500 h-2.5 rounded-full transition-all duration-700 ease-out"
-            style={{ width: `${pct}%` }}
+            className="h-2.5 rounded-full transition-all duration-700 ease-out"
+            style={{ width: `${pct}%`, background: 'linear-gradient(90deg,#d9b86e,#b98c3f)' }}
           />
         </div>
       </div>
 
-      <div className="flex gap-4 text-xs text-gray-500">
+      <div className="flex gap-4 text-xs text-ink-muted">
         <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-500" /> {stats?.done || 0} Done</span>
-        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-blue-500" /> {stats?.in_progress || 0} Active</span>
-        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-gray-300" /> {stats?.not_started || 0} Remaining</span>
+        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-teal-500" /> {stats?.in_progress || 0} Active</span>
+        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full" style={{ background: 'var(--bd)' }} /> {stats?.not_started || 0} Remaining</span>
       </div>
     </div>
   );

@@ -76,11 +76,12 @@ export default function Settings() {
   const Option = ({ label, value, current, onChange }) => (
     <button
       onClick={() => onChange(value)}
-      className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+      className={`px-4 py-2 rounded-xl text-sm font-medium transition-all border border-transparent ${
         current === value
-          ? 'bg-brand-600 text-white shadow-sm'
+          ? 'text-[#201a0e] shadow-sm'
           : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
       }`}
+      style={current === value ? { background: 'linear-gradient(180deg,#ecd9a8,#cfa654)' } : undefined}
     >
       {label}
     </button>
@@ -232,7 +233,8 @@ export default function Settings() {
               <button
                 onClick={generateInvite}
                 disabled={genLoading}
-                className="px-4 py-2 rounded-xl text-sm font-medium bg-brand-600 text-white shadow-sm hover:bg-brand-700 disabled:opacity-60"
+                className="px-4 py-2 rounded-xl text-sm font-medium text-[#201a0e] shadow-sm disabled:opacity-60"
+                style={{ background: 'linear-gradient(180deg,#ecd9a8,#cfa654)' }}
               >
                 {genLoading ? 'Generating…' : 'Generate invite code'}
               </button>
@@ -260,7 +262,8 @@ export default function Settings() {
                   <button
                     onClick={emailInvite}
                     disabled={emailing || !inviteEmail.trim()}
-                    className="px-3 py-2 rounded-xl text-sm font-medium bg-brand-600 text-white shadow-sm hover:bg-brand-700 disabled:opacity-60 flex items-center gap-1 shrink-0"
+                    className="px-3 py-2 rounded-xl text-sm font-medium text-[#201a0e] shadow-sm disabled:opacity-60 flex items-center gap-1 shrink-0"
+                    style={{ background: 'linear-gradient(180deg,#ecd9a8,#cfa654)' }}
                   >
                     {emailing ? <><Mail size={15} /> Sending…</> : <><Send size={15} /> Email invite</>}
                   </button>

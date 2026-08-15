@@ -15,7 +15,7 @@ import TrendBadge from '../components/dashboard/TrendBadge';
 /* ─── Mini Sparkline (SVG) ─── */
 function Sparkline({ snapshots, width = 120, height = 32 }) {
   if (!snapshots || snapshots.length < 2) {
-    return <div className="text-xs text-gray-400 italic" style={{ width }}>Not enough data</div>;
+    return <div className="text-xs text-ink-faint italic" style={{ width }}>Not enough data</div>;
   }
 
   const values = snapshots.map(s => s.mastery);
@@ -31,7 +31,7 @@ function Sparkline({ snapshots, width = 120, height = 32 }) {
 
   // Color based on trend direction
   const trending = values[values.length - 1] >= values[0];
-  const color = trending ? '#22c55e' : '#f59e0b';
+  const color = trending ? '#10b981' : '#d9b86e';
 
   return (
     <svg width={width} height={height} className="block">
@@ -61,7 +61,7 @@ function MasteryHistory({ history }) {
 
   return (
     <div className="card">
-      <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+      <h3 className="font-semibold text-ink mb-4 flex items-center gap-2">
         <TrendingUp size={18} className="text-brand-500" /> Mastery Over Time
       </h3>
       <div className="space-y-2">
@@ -72,8 +72,8 @@ function MasteryHistory({ history }) {
 
           return (
             <div key={topic.topic} className="flex items-center gap-3 py-1.5">
-              <span className="text-sm font-medium w-32 truncate text-gray-700">{topic.topic}</span>
-              <div className="flex-1 bg-gray-100 rounded-full h-2.5 overflow-hidden">
+              <span className="text-sm font-medium w-32 truncate text-ink-soft">{topic.topic}</span>
+              <div className="flex-1 rounded-full h-2.5 overflow-hidden" style={{ background: 'var(--bd2)' }}>
                 <div
                   className={`h-full rounded-full transition-all duration-500 ${barColor}`}
                   style={{ width: `${Math.max(3, m * 100)}%` }}
@@ -96,16 +96,16 @@ function ReviewPanel({ data }) {
   if (!data) return null;
   return (
     <div className="card">
-      <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+      <h3 className="font-semibold text-ink mb-3 flex items-center gap-2">
         <Clock size={18} /> Due for Review
       </h3>
-      <p className="text-sm text-gray-600 mb-3">{data.message}</p>
+      <p className="text-sm text-ink-muted mb-3">{data.message}</p>
       {data.due_topics?.length > 0 && (
         <div className="space-y-2">
           {data.due_topics.map((t, i) => (
-            <div key={i} className="flex items-center justify-between text-sm bg-gray-50 px-3 py-2 rounded-lg">
-              <span className="font-medium">{t.topic}</span>
-              <div className="flex items-center gap-3 text-xs text-gray-500">
+            <div key={i} className="flex items-center justify-between text-sm bg-slate-50 px-3 py-2 rounded-xl">
+              <span className="font-medium text-ink-soft">{t.topic}</span>
+              <div className="flex items-center gap-3 text-xs text-ink-muted">
                 <span>Mastery: {(t.mastery * 100).toFixed(0)}%</span>
                 <span>Retention: {(t.retention_estimate * 100).toFixed(0)}%</span>
                 <span>{t.days_since_review.toFixed(1)}d ago</span>
@@ -123,24 +123,24 @@ function StudyPlanPanel({ data }) {
   if (!data?.plan?.length) return null;
   return (
     <div className="card">
-      <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+      <h3 className="font-semibold text-ink mb-3 flex items-center gap-2">
         <BookOpen size={18} /> Study Plan
       </h3>
       <div className="space-y-2">
         {data.plan.map((item, i) => (
-          <div key={i} className="flex items-center gap-3 text-sm bg-gray-50 px-3 py-2 rounded-lg">
+          <div key={i} className="flex items-center gap-3 text-sm bg-slate-50 px-3 py-2 rounded-xl">
             <span className={`px-2 py-0.5 rounded text-xs font-medium ${
-              item.type === 'review' ? 'bg-blue-100 text-blue-700' :
+              item.type === 'review' ? 'bg-teal-100 text-teal-700' :
               item.type === 'learn' ? 'bg-green-100 text-green-700' :
-              'bg-purple-100 text-purple-700'
+              'bg-brand-100 text-brand-700'
             }`}>{item.type}</span>
-            <span className="font-medium flex-1">{item.topic}</span>
-            <span className="text-gray-500">{item.duration_min} min</span>
+            <span className="font-medium flex-1 text-ink-soft">{item.topic}</span>
+            <span className="text-ink-muted">{item.duration_min} min</span>
           </div>
         ))}
       </div>
       {data.motivational_note && (
-        <p className="mt-3 text-sm text-green-700 bg-green-50 p-3 rounded-lg">{data.motivational_note}</p>
+        <p className="mt-3 text-sm text-green-700 bg-green-50 p-3 rounded-xl">{data.motivational_note}</p>
       )}
     </div>
   );
@@ -155,25 +155,25 @@ function GamificationPanel({ data }) {
   return (
     <div className="card">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="font-semibold text-gray-900 flex items-center gap-2">
-          <Award size={18} /> Level {data.level}
+        <h3 className="font-semibold text-ink flex items-center gap-2">
+          <Award size={18} className="text-brand-500" /> Level {data.level}
         </h3>
         <div className="flex items-center gap-2 text-sm">
-          <Flame size={16} className="text-orange-500" />
-          <span className="font-bold text-orange-600">{data.current_streak} day streak</span>
+          <Flame size={16} className="text-accent-500" />
+          <span className="font-bold text-accent-600">{data.current_streak} day streak</span>
         </div>
       </div>
-      <div className="mb-1 flex justify-between text-xs text-gray-500">
+      <div className="mb-1 flex justify-between text-xs text-ink-muted">
         <span>{data.xp} XP total</span>
         <span>{data.xp_in_level} / {data.xp_for_next_level} to next level</span>
       </div>
-      <div className="bg-gray-100 rounded-full h-4 overflow-hidden mb-4">
-        <div className="h-full rounded-full bg-gradient-to-r from-brand-500 to-purple-500 transition-all duration-700"
-          style={{ width: `${pct}%` }} />
+      <div className="rounded-full h-4 overflow-hidden mb-4" style={{ background: 'var(--bd2)' }}>
+        <div className="h-full rounded-full transition-all duration-700"
+          style={{ width: `${pct}%`, background: 'linear-gradient(90deg,#d9b86e,#b98c3f)' }} />
       </div>
       {data.badges?.length > 0 && (
         <div>
-          <p className="text-xs text-gray-500 mb-2">Badges earned</p>
+          <p className="text-xs text-ink-muted mb-2">Badges earned</p>
           <div className="flex flex-wrap gap-2">
             {data.badges.map((b, i) => (
               <span key={i} className="inline-flex items-center gap-1 px-3 py-1.5 bg-amber-50 border border-amber-200 rounded-full text-xs font-medium text-amber-800"
@@ -279,9 +279,9 @@ export default function Dashboard() {
   return (
     <div className="max-w-6xl mx-auto px-6 py-8 space-y-6">
       {/* Header with Reload + Download */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-4">
-          <h2 className="text-2xl font-bold text-gray-900">Your Mastery Dashboard</h2>
+          <h2 className="font-display text-3xl font-semibold text-ink">Your Mastery Dashboard</h2>
           {masteryData?.overall_trend && <TrendBadge trend={masteryData.overall_trend} />}
         </div>
         <div className="flex items-center gap-2">
@@ -301,9 +301,9 @@ export default function Dashboard() {
 
       {!hasData && (
         <div className="card text-center py-12">
-          <Zap size={48} className="mx-auto text-gray-300 mb-4" />
-          <h3 className="text-lg font-semibold text-gray-700 mb-2">Your journey starts here</h3>
-          <p className="text-gray-500">Answer some questions to see your mastery grow!</p>
+          <Zap size={48} className="mx-auto text-ink-faint mb-4" />
+          <h3 className="font-display text-xl font-semibold text-ink-soft mb-2">Your journey starts here</h3>
+          <p className="text-ink-muted">Answer some questions to see your mastery grow!</p>
         </div>
       )}
 
@@ -319,28 +319,28 @@ export default function Dashboard() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <StatCard icon={CheckCircle} label="Total Questions" value={progress?.total_questions || 0} />
             <StatCard icon={TrendingUp} label="Accuracy" value={`${progress?.accuracy || 0}%`} color="text-green-600" bg="bg-green-50" />
-            <StatCard icon={Target} label="Topics Studied" value={Object.keys(progress?.topics || {}).length} color="text-purple-600" bg="bg-purple-50" />
+            <StatCard icon={Target} label="Topics Studied" value={Object.keys(progress?.topics || {}).length} color="text-teal-600" bg="bg-teal-50" />
           </div>
 
           {/* Interactive Skill Map + Mastery Legend */}
           <div className="card" ref={graphContainerRef}>
-            <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+            <h3 className="font-semibold text-ink mb-3 flex items-center gap-2">
               <Sparkles size={18} className="text-brand-500" /> Interactive Skill Map
             </h3>
-            <p className="text-xs text-gray-500 mb-2">
+            <p className="text-xs text-ink-muted mb-2">
               Node size and color reflect your mastery. Edges show prerequisite relationships. Drag to explore.
             </p>
-            <div className="border border-gray-100 rounded-lg overflow-hidden bg-white">
+            <div className="border rounded-xl overflow-hidden" style={{ borderColor: 'var(--bd2)' }}>
               <KnowledgeGraphViz data={graph} width={graphWidth - 48} height={400} />
             </div>
-            <div className="flex flex-wrap gap-4 mt-3 text-xs text-gray-500">
+            <div className="flex flex-wrap gap-4 mt-3 text-xs text-ink-muted">
               <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-green-500 inline-block" /> Mastered (&gt;80%)</span>
-              <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-blue-500 inline-block" /> In Progress (40-80%)</span>
+              <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-teal-500 inline-block" /> In Progress (40-80%)</span>
               <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-red-400 inline-block" /> Weak (&lt;40%)</span>
               <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-amber-500 inline-block" /> Suggested Focus</span>
             </div>
             {graph?.suggested_focus && (
-              <p className="mt-3 text-sm text-brand-600 bg-brand-50 p-3 rounded-lg">
+              <p className="mt-3 text-sm text-brand-700 bg-brand-50 p-3 rounded-xl">
                 <Target size={14} className="inline mr-1 -mt-0.5" />
                 {graph.suggested_focus}
               </p>
@@ -353,21 +353,21 @@ export default function Dashboard() {
           {/* Learning Path progress (if set) */}
           {pathData?.goal && pathData.path?.length > 0 && (
             <div className="card">
-              <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+              <h3 className="font-semibold text-ink mb-3 flex items-center gap-2">
                 <BookOpen size={18} /> Learning Path: {pathData.goal}
               </h3>
               <div className="flex items-center gap-4 mb-2">
-                <div className="flex-1 bg-gray-100 rounded-full h-3 overflow-hidden">
+                <div className="flex-1 rounded-full h-3 overflow-hidden" style={{ background: 'var(--bd2)' }}>
                   <div
-                    className="bg-gradient-to-r from-brand-500 to-green-500 h-full rounded-full transition-all duration-700"
-                    style={{ width: `${pathData.progress_pct}%` }}
+                    className="h-full rounded-full transition-all duration-700"
+                    style={{ width: `${pathData.progress_pct}%`, background: 'linear-gradient(90deg,#d9b86e,#10b981)' }}
                   />
                 </div>
                 <span className="text-sm font-semibold text-brand-600">{pathData.progress_pct}%</span>
               </div>
               {pathData.current_topic && (
-                <p className="text-sm text-gray-600">
-                  Currently working on: <span className="font-medium text-gray-900 capitalize">{pathData.current_topic}</span>
+                <p className="text-sm text-ink-muted">
+                  Currently working on: <span className="font-medium text-ink capitalize">{pathData.current_topic}</span>
                 </p>
               )}
             </div>
@@ -376,35 +376,35 @@ export default function Dashboard() {
           {/* Certificates */}
           {certsData?.certificates?.length > 0 && (
             <div className="card">
-              <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+              <h3 className="font-semibold text-ink mb-3 flex items-center gap-2">
                 <Award size={18} className="text-amber-500" /> Certificates Earned ({certsData.total})
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {certsData.certificates.map((cert) => {
                   const colors = {
-                    Proficiency: 'border-blue-200 bg-blue-50',
-                    Excellence: 'border-purple-200 bg-purple-50',
+                    Proficiency: 'border-teal-200 bg-teal-50',
+                    Excellence: 'border-brand-200 bg-brand-50',
                     Mastery: 'border-amber-200 bg-amber-50',
                   };
                   const textColors = {
-                    Proficiency: 'text-blue-700',
-                    Excellence: 'text-purple-700',
+                    Proficiency: 'text-teal-700',
+                    Excellence: 'text-brand-700',
                     Mastery: 'text-amber-700',
                   };
                   return (
                     <button
                       key={cert.cert_id}
                       onClick={() => setSelectedCert(cert)}
-                      className={`p-3 rounded-lg border-2 text-left hover:shadow-md transition-shadow ${colors[cert.tier] || colors.Proficiency}`}
+                      className={`p-3 rounded-xl border-2 text-left hover:shadow-card transition-shadow cursor-pointer ${colors[cert.tier] || colors.Proficiency}`}
                     >
                       <div className="flex items-center justify-between mb-1">
                         <span className={`text-xs font-bold uppercase ${textColors[cert.tier] || textColors.Proficiency}`}>
                           {cert.tier}
                         </span>
-                        <span className="text-xs text-gray-400">{cert.awarded_at?.slice(0, 10)}</span>
+                        <span className="text-xs text-ink-faint">{cert.awarded_at?.slice(0, 10)}</span>
                       </div>
-                      <p className="font-medium text-gray-900 capitalize">{cert.topic}</p>
-                      <p className="text-xs text-gray-500">{Math.round(cert.mastery * 100)}% mastery</p>
+                      <p className="font-medium text-ink capitalize">{cert.topic}</p>
+                      <p className="text-xs text-ink-muted">{Math.round(cert.mastery * 100)}% mastery</p>
                     </button>
                   );
                 })}

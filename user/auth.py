@@ -20,7 +20,7 @@ from user.core.account_recovery import (
 from user.core.emailer import send_email, emailer_configured
 from user.core.email_templates import verification_email, password_reset_email
 from user.core.login_guard import assert_login_allowed, record_login_failure, clear_login_failures
-from user.services.token_service import TokenService
+from user.services.token_service import TokenService, decode_token
 from user.auth_config import REFRESH_TOKEN_EXPIRE_DAYS
 from user.rate_limit import limiter as shared_limiter
 
@@ -209,7 +209,7 @@ async def refresh(
     if not token:
         raise HTTPException(401, "Missing refresh token")
     try:
-        payload = TokenService.decode_token(token)
+        payload = decode_token(token)
     except JWTError:
         raise HTTPException(401, "Invalid or expired refresh token")
 
@@ -255,7 +255,7 @@ async def logout(
     if not token:
         return {"message": "Logged out successfully"}
     try:
-        payload = TokenService.decode_token(token)
+        payload = decode_token(token)
     except JWTError:
         raise HTTPException(400, "Invalid refresh token")
 

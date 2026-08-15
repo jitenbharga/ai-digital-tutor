@@ -583,7 +583,7 @@ export default function Tutor() {
           {menuOpen && (
             <div className="absolute right-0 top-full mt-1 z-50 w-56 rounded-xl border shadow-xl py-1 animate-fade-in menu-opaque" style={{ borderColor: 'var(--bd)' }}>
               <button
-                onClick={() => setUseStreaming(!useStreaming)}
+                onClick={() => { setUseStreaming(prev => !prev); setMenuOpen(false); }}
                 className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-ink-soft hover:bg-white/5 transition-colors cursor-pointer"
               >
                 <Zap size={16} className={useStreaming ? 'text-green-600' : 'text-ink-faint'} />

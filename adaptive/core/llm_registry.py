@@ -126,15 +126,16 @@ def get_tier_for_engine(engine_name: str) -> str:
 # ----------------------------------
 
 # Base model label per provider (a "#<key-index>" suffix is appended per key).
+# Groq: llama-3.3-70b-versatile was decommissioned 2026-08-16 → openai/gpt-oss-120b.
 _PROVIDER_MODEL = {
     "mistral": ("Mistral-Large", "mistral-large-latest"),
-    "groq": ("Groq-LLaMA3.3-70B", "llama-3.3-70b-versatile"),
+    "groq": ("Groq-GPT-OSS-120B", "openai/gpt-oss-120b"),
 }
 
 # Estimated cost per 1K tokens (input) for telemetry — keyed by BASE label.
 # Telemetry strips the "#<idx>" suffix before lookup.
 MODEL_COST_PER_1K = {
-    "Groq-LLaMA3.3-70B": 0.00059,  # cheap (free tier / pay-per-use)
+    "Groq-GPT-OSS-120B": 0.00015,  # input $0.15/1M (Groq, cheap tier)
     "Mistral-Large": 0.00200,      # strong tier
 }
 
@@ -228,7 +229,7 @@ _cooldown: Dict[str, float] = {}
 
 
 def mark_cooldown(label: str, seconds: float) -> None:
-    """Mark a key label (e.g. 'Groq-LLaMA3.3-70B#2') rate-limited for `seconds`."""
+    """Mark a key label (e.g. 'Groq-GPT-OSS-120B#2') rate-limited for `seconds`."""
     import time as _t
     _cooldown[label] = _t.time() + max(float(seconds), 1.0)
 

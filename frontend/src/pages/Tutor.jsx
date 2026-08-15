@@ -561,7 +561,7 @@ export default function Tutor() {
     {/* Main tutor area */}
     <div className="flex flex-col flex-1 min-w-0 min-h-0">
       {/* Topic header */}
-      <div className="flex-shrink-0 bg-white/70 dark:bg-[#0b0f18]/70 backdrop-blur-xl border-b px-4 sm:px-6 py-3 flex flex-wrap items-center gap-x-4 gap-y-2"
+      <div className="flex-shrink-0 relative z-40 bg-white/70 dark:bg-[#0b0f18]/70 backdrop-blur-xl border-b px-4 sm:px-6 py-3 flex flex-wrap items-center gap-x-4 gap-y-2"
         style={{ borderColor: 'var(--bd)' }}>
         <button onClick={() => navigate('/learn')} className="text-ink-faint hover:text-ink-soft flex-shrink-0 cursor-pointer">
           <ArrowLeft size={20} />
@@ -585,7 +585,7 @@ export default function Tutor() {
             <div
               onMouseDown={(e) => e.stopPropagation()}
               onTouchStart={(e) => e.stopPropagation()}
-              className="absolute right-0 top-full mt-1 z-50 w-56 rounded-xl border shadow-xl py-1 animate-fade-in menu-opaque"
+              className="absolute right-0 top-full mt-1 z-50 w-56 rounded-xl border shadow-xl py-1 animate-fade-in menu-opaque pointer-events-auto"
               style={{ borderColor: 'var(--bd)' }}
             >
               <button

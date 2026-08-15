@@ -573,6 +573,7 @@ export default function Tutor() {
         {/* All session actions collapsed into a standard 3-dot overflow menu */}
         <div className="ml-auto relative flex-shrink-0 z-50" ref={menuRef}>
           <button
+            type="button"
             onClick={() => setMenuOpen(o => !o)}
             className="p-2 rounded-lg text-ink-muted hover:bg-white/10 hover:text-ink-soft transition-colors cursor-pointer"
             title="Session actions" aria-label="Session actions"
@@ -581,8 +582,14 @@ export default function Tutor() {
             <MoreVertical size={20} />
           </button>
           {menuOpen && (
-            <div className="absolute right-0 top-full mt-1 z-50 w-56 rounded-xl border shadow-xl py-1 animate-fade-in menu-opaque" style={{ borderColor: 'var(--bd)' }}>
+            <div
+              onMouseDown={(e) => e.stopPropagation()}
+              onTouchStart={(e) => e.stopPropagation()}
+              className="absolute right-0 top-full mt-1 z-50 w-56 rounded-xl border shadow-xl py-1 animate-fade-in menu-opaque"
+              style={{ borderColor: 'var(--bd)' }}
+            >
               <button
+                type="button"
                 onClick={() => { setUseStreaming(prev => !prev); setMenuOpen(false); }}
                 className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-ink-soft hover:bg-white/5 transition-colors cursor-pointer"
               >
@@ -591,6 +598,7 @@ export default function Tutor() {
                 <span className={`text-xs font-semibold ${useStreaming ? 'text-green-600' : 'text-ink-faint'}`}>{useStreaming ? 'On' : 'Off'}</span>
               </button>
               <button
+                type="button"
                 onClick={() => { handleStartQuiz(); setMenuOpen(false); }}
                 disabled={quizLoading || quizMode}
                 title={quizMode ? "Quiz in progress" : ""}
@@ -600,6 +608,7 @@ export default function Tutor() {
                 <span className="flex-1 text-left">{quizLoading ? 'Generating…' : quizMode ? 'Quiz in progress' : 'Take Quiz'}</span>
               </button>
               <button
+                type="button"
                 onClick={() => { handleRecap(); setMenuOpen(false); }}
                 disabled={recapLoading}
                 className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-ink-soft hover:bg-white/5 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
@@ -608,6 +617,7 @@ export default function Tutor() {
                 <span className="flex-1 text-left">{recapLoading ? 'Loading…' : '60-second Recap'}</span>
               </button>
               <button
+                type="button"
                 onClick={() => { handleDiagnose(); setMenuOpen(false); }}
                 disabled={diagnoseLoading}
                 className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-ink-soft hover:bg-white/5 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
@@ -617,6 +627,7 @@ export default function Tutor() {
               </button>
               <div className="my-1 border-t" style={{ borderColor: 'var(--bd2)' }} />
               <button
+                type="button"
                 onClick={() => { handleNewChat(); setMenuOpen(false); }}
                 className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-ink-soft hover:bg-white/5 transition-colors cursor-pointer"
               >

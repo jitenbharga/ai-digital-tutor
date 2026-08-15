@@ -591,7 +591,7 @@ export default function Tutor() {
                 <span className={`text-xs font-semibold ${useStreaming ? 'text-green-600' : 'text-ink-faint'}`}>{useStreaming ? 'On' : 'Off'}</span>
               </button>
               <button
-                onClick={() => { handleStartQuiz(); setMenuOpen(false); }}
+                onClick={() => { handleStartQuiz(); }}
                 disabled={quizLoading || quizMode}
                 title={quizMode ? "Quiz in progress" : ""}
                 className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-ink-soft hover:bg-white/5 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
@@ -600,7 +600,7 @@ export default function Tutor() {
                 <span className="flex-1 text-left">{quizLoading ? 'Generating…' : quizMode ? 'Quiz in progress' : 'Take Quiz'}</span>
               </button>
               <button
-                onClick={() => { handleRecap(); setMenuOpen(false); }}
+                onClick={() => { handleRecap(); }}
                 disabled={recapLoading}
                 className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-ink-soft hover:bg-white/5 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
               >
@@ -608,7 +608,7 @@ export default function Tutor() {
                 <span className="flex-1 text-left">{recapLoading ? 'Loading…' : '60-second Recap'}</span>
               </button>
               <button
-                onClick={() => { handleDiagnose(); setMenuOpen(false); }}
+                onClick={() => { handleDiagnose(); }}
                 disabled={diagnoseLoading}
                 className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-ink-soft hover:bg-white/5 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
               >

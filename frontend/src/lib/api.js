@@ -21,22 +21,31 @@ function authHeaders() {
 }
 
 // Exchange the httpOnly refresh cookie for a fresh access token.
-export async function refreshAccessToken() {
-  try {
-    const res = await fetch(`${BASE}/refresh`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: '{}',
-    });
-    if (!res.ok) return null;
-    const data = await res.json();
-    if (data.access_token) {
-      setAccessToken(data.access_token);
-      return data;
-    }
-  } catch { /* offline / no cookie */ }
-  return null;
+// Single-flight: if several requests 401 at once (access-token expiry), they
+// all share ONE refresh call. The backend rotates (revokes) the refresh token
+// on every use, so parallel refreshes would race — a stale second request
+// would trigger reuse-detection and revoke the whole session.
+let _refreshPromise = null;
+export function refreshAccessToken() {
+  if (_refreshPromise) return _refreshPromise;
+  _refreshPromise = (async () => {
+    try {
+      const res = await fetch(`${BASE}/refresh`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: '{}',
+      });
+      if (!res.ok) return null;
+      const data = await res.json();
+      if (data.access_token) {
+        setAccessToken(data.access_token);
+        return data;
+      }
+    } catch { /* offline / no cookie */ }
+    return null;
+  })().finally(() => { _refreshPromise = null; });
+  return _refreshPromise;
 }
 
 // Default per-request timeout so a hung request can't leave the UI spinning

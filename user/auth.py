@@ -21,6 +21,7 @@ from user.core.emailer import send_email, emailer_configured
 from user.core.email_templates import verification_email, password_reset_email
 from user.core.login_guard import assert_login_allowed, record_login_failure, clear_login_failures
 from user.services.token_service import TokenService
+from user.auth_config import REFRESH_TOKEN_EXPIRE_DAYS
 from user.rate_limit import limiter as shared_limiter
 
 router = APIRouter()
@@ -43,7 +44,7 @@ def _set_refresh_cookie(response: Response, token: str) -> None:
     response.set_cookie(
         key=REFRESH_COOKIE,
         value=token,
-        max_age=int(os.getenv("REFRESH_TOKEN_EXPIRE_DAYS", "30")) * 24 * 60 * 60,
+        max_age=REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
         httponly=True,
         secure=_COOKIE_SECURE,
         samesite="strict",

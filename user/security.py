@@ -28,7 +28,7 @@ def create_access_token(data: dict, expires_delta_minutes: int = 15) -> str:
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 
-def create_refresh_token(data: dict, expires_delta_days: int = 30) -> str:
+def create_refresh_token(data: dict, expires_delta_days: int = 7) -> str:
     import jwt
     import uuid
     from datetime import datetime, timedelta, timezone
